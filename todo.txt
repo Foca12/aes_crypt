@@ -1,0 +1,68 @@
+================================================================================
+FASE DI SVILUPPO DA ZERO DI AES-128 IN C++ (ARRAY LINEARE 1D)
+================================================================================
+
+[FASE 1] DEFINIZIONE DELLE STRUTTURE DATI E TABELLE DI LOOKUP
+--------------------------------------------------------------------------------
+X - 1.1 Definire il blocco dati primario (byte chunk) come array lineare di 16 byte
+X - 1.3 Inserire nel codice l'array statico globale della Inverse S-Box (per la decifratura).
+X - 1.2 Inserire nel codice l'array statico globale della S-Box (256 byte).
+X - 1.4 Definire l'array Rcon (Round Constants) con i 10 valori esadecimali precalcolati:
+    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
+
+[FASE 2] FUNZIONI MATEMATICHE AUSILIARIE (CAMPO DI GALOIS)
+--------------------------------------------------------------------------------
+2.1 Implementare la funzione xtime(uint8_t x) per la moltiplicazione per 0x02:
+    - Esegue uno shift a sinistra di 1 bit.
+    - Se il bit originale più significativo era 1, esegue uno XOR con 0x1B.
+2.2 Sviluppare le macro o funzioni di moltiplicazione per i coefficienti di MixColumns:
+    - Moltiplicare per 0x01: resta invariato.
+    - Moltiplicare per 0x02: xtime(x).
+    - Moltiplicare per 0x03: xtime(x) ^ x.
+
+[FASE 3] ALGORITMO DI KEY EXPANSION (GENERAZIONE CHIAVI DI ROUND)
+--------------------------------------------------------------------------------
+3.1 Creare un buffer per la chiave espansa totale di 176 byte (16 byte * 11 round).
+3.2 Copiare i primi 16 byte della chiave utente direttamente all'inizio del buffer.
+3.3 Implementare il ciclo principale di espansione per le restanti 40 parole (word da 4 byte):
+    - Se l'indice della parola corrente e' multiplo di 4:
+        * RotWord: Ruota ciclicamente a sinistra i 4 byte di una posizione.
+        * SubWord: Sostituisci i 4 byte usando la S-Box.
+        * XOR con la costante Rcon corrispondente al round attuale.
+    - Se l'indice non e' multiplo di 4:
+        * Esegui lo XOR tra la parola precedente e la parola di 4 posizioni indietro.
+
+[FASE 4] LE QUATTRO TRASFORMAZIONI CORE (INDICI 1D FISSATI)
+--------------------------------------------------------------------------------
+4.1 SubBytes:
+    - Un ciclo for da 0 a 15 che sostituisce state[i] con Sbox[state[i]].
+4.2 AddRoundKey:
+    - Un ciclo for da 0 a 15 che applica lo XOR bitwise: state[i] ^= roundKey[i].
+4.3 ShiftRows (Hardcoded su indici 1D):
+    - Riga 0: Indici [0, 4, 8, 12] -> Restano invariati.
+    - Riga 1: Indici [1, 5, 9, 13] -> Ruotano a sinistra di 1 byte.
+    - Riga 2: Indici [2, 6, 10, 14] -> Ruotano a sinistra di 2 byte.
+    - Riga 3: Indici [3, 7, 11, 15] -> Ruotano a sinistra di 3 byte.
+4.4 MixColumns (Lavorando su colonne contigue di 4 byte):
+    - Colonna 0 (0-3), Colonna 1 (4-7), Colonna 2 (8-11), Colonna 3 (12-15).
+    - Applicare la moltiplicazione di matrice in GF(2^8) usando la funzione xtime.
+
+[FASE 5] INTEGRAZIONE DEL CICLO PRINCIPALE DI CIFRATURA (CIPHER)
+--------------------------------------------------------------------------------
+5.1 Inizializzazione: Eseguire AddRoundKey con la chiave iniziale (Round 0).
+5.2 Eseguire i Round intermedi (da 1 a 9) in un ciclo for chiamando in sequenza:
+    - SubBytes
+    - ShiftRows
+    - MixColumns
+    - AddRoundKey (usando la sottochiave del round corrente)
+5.3 Eseguire il Round Finale (Round 10) escludendo MixColumns:
+    - SubBytes
+    - ShiftRows
+    - AddRoundKey (usando l'ultima sottochiave)
+
+[FASE 6] DEBUGGING, TESTING E VERIFICA
+--------------------------------------------------------------------------------
+6.1 Testare la Key Expansion isolata confrontandola con i vettori di test NIST.
+6.2 Creare una funzione helper per stampare lo State in formato esadecimale dopo ogni fase.
+6.3 Eseguire un test end-to-end con una stringa fissa e verificare che l'output cifrato
+    coincida con un tool AES standard online (es. CyberChef) o librerie note (OpenSSL).
