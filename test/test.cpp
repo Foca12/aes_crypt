@@ -10,12 +10,8 @@ int main(){
   Bytearray byte ("0123456789abcdef");
   ByteChunk128 chunk (byte);
   ByteMatrix matrix = ByteMatrix::divide_bytearray(byte);
-  // ByteMatrix msg = ByteMatrix::divide_bytearray(byte);
-  // auto crypt = crypt_operations::crypt_substitute(msg);
-  // auto decrypt = crypt_operations::decrypt_substitute(crypt);
 
-  cout << (string)chunk << endl;
-  cout << (string)(shift_left(matrix)) << endl;
+  cout << (string)(byte << 1) << endl;
 
   return 0;
 }
