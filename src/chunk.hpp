@@ -3,7 +3,6 @@
 #include "../include/constants.hpp"
 #include "../include/chunk.hpp"
 #include <iostream>
-using std::cout;
 using std::endl;
 #include <stdexcept>
 #include <memory.h>
@@ -45,7 +44,7 @@ class ByteChunk128{
   }
 
   int& operator[](int idx){
-    return this->bytes[idx];
+    return this->bytes[idx >= 0? idx : num_chars + idx];
   }
 
   Bytearray slice(int start, int stop, int step){
@@ -78,7 +77,27 @@ class ByteChunk128{
       shifted_row <<= row_idx;
       // assegna la riga alla colonna
       for (int actual_idx = 0; actual_idx < num_chars; actual_idx+=side){
-        cout << actual_idx << endl;
+        result[actual_idx+row_idx] = shifted_row[actual_idx / side];
+      }
+    }
+    return (ByteChunk128 (result)) << rounds-1;
+  }
+  ByteChunk128 operator>> (int rounds) {
+    if (rounds == 0){
+      return ByteChunk128(this->bytes, num_chars);
+    }
+    int side = sqrt(num_chars);
+    Bytearray result (num_chars);
+    // per ogni start di riga (es: 0, 1, 2, 3)
+    for (int row_idx = 0; row_idx < side; row_idx++){
+      Bytearray shifted_row;
+      // aumenta del lato per scorrere la riga (es: 4, )
+      for (int actual_idx = row_idx; actual_idx < num_chars; actual_idx+=side){
+        shifted_row.push_back(this->operator[](actual_idx));
+      }
+      shifted_row >>= row_idx;
+      // assegna la riga alla colonna
+      for (int actual_idx = 0; actual_idx < num_chars; actual_idx+=side){
         result[actual_idx+row_idx] = shifted_row[actual_idx / side];
       }
     }
@@ -94,4 +113,4 @@ class ByteChunk128{
     }
     return res;
   }
-};
+}; 

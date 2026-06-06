@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
-
+ 
 typedef std::vector<int> ilist;
 typedef std::vector<int>::iterator ilist_iterator;
 using std::string, std::hex;

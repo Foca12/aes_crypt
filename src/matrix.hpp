@@ -6,7 +6,7 @@
 #include <memory.h>
 #include <vector>
 #include <cmath>
-
+ 
 class ByteMatrix{
   types::bclist chunks; // vettore di chunks
   
@@ -40,16 +40,30 @@ class ByteMatrix{
     return this->length();
   }
   int& operator[](int idx){
-    int x = floor(idx / num_chars);
-    int y = idx % num_chars;
-    return chunks[x][y];
+    // int chunk_idx = floor((idx >= 0? idx : this->length()*num_chars + idx) / num_chars);
+    // int num_idx = idx >= 0? idx % num_chars : num_chars - ((-idx) % num_chars);
+    int chunk_idx = floor(abs(idx) / num_chars);
+    int num_idx = abs(idx) % num_chars;
+    if (idx < 0){
+      chunk_idx = this->length() - chunk_idx - 1;
+      num_idx = num_chars - num_idx;
+    }
+    return this->chunks[chunk_idx][num_idx];
+  }
+  int& at(int chunk_idx, int num_idx){
+    return this->chunks[chunk_idx >= 0? chunk_idx : this->length()+chunk_idx][num_idx >= 0? num_idx : num_chars+num_idx];
   }
   ByteChunk128& get_chunk(int idx){
     return this->chunks[idx];
   }
   
   void push_back(ByteChunk128 bytes){
-    this->chunks.push_back(bytes);
+    int i = num_chars;
+    for (; i > 0; i--){
+      if (this->operator[](-1) == 0){
+        break;
+      }
+    }
   }
 
   // cast di tipi
