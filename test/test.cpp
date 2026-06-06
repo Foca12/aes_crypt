@@ -17,7 +17,7 @@ int main(){
   ByteChunk128 chunk (byte);
   ByteMatrix matrix = ByteMatrix::divide_bytearray(byte);
 
-  cout << (string)(chunk >> 1) << endl;
+  cout << xtime(0b00101101);
 
   return 0;
 }

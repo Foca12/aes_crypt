@@ -1,9 +1,4 @@
-#include "../../include/chunk.hpp"
 #include "../../include/matrix.hpp"
-#include "../../include/constants.hpp"
-#include "../../include/types.hpp"
-#include <functional>
-#include <cmath>
 
 ByteMatrix shift_left(ByteMatrix input){
   ByteMatrix result;
