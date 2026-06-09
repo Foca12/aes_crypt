@@ -14,7 +14,6 @@ X - 1.4 Definire l'array Rcon (Round Constants) con i 10 valori esadecimali prec
 --------------------------------------------------------------------------------
 2.1 Implementare la funzione xtime(uint8_t x) per la moltiplicazione per 0x02:
     X - Esegue uno shift a sinistra di 1 bit.
-        - Unire i 2 cicli
     X - Se il bit originale più significativo era 1, esegue uno XOR con 0x1B.
 2.2 Sviluppare le macro o funzioni di moltiplicazione per i coefficienti di MixColumns:
     - Moltiplicare per 0x01: resta invariato.

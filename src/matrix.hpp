@@ -6,7 +6,7 @@
 #include <memory.h>
 #include <vector>
 #include <cmath>
- 
+  
 class ByteMatrix{
   types::bclist chunks; // vettore di chunks
   
@@ -56,14 +56,39 @@ class ByteMatrix{
   ByteChunk128& get_chunk(int idx){
     return this->chunks[idx];
   }
-  
-  void push_back(ByteChunk128 bytes){
-    int i = num_chars;
-    for (; i > 0; i--){
-      if (this->operator[](-1) == 0){
-        break;
-      }
+  types::bclist_iterator begin(){
+    return this->chunks.begin();
+  }
+  types::bclist_iterator end(){
+    return this->chunks.end();
+  }
+  ByteMatrix operator<<(int rounds){
+    ByteMatrix result (this->chunks);
+    for (int i = 0; i < this->length(); i++){
+        result.get_chunk(i) <<= rounds;
     }
+    return result;
+  }
+  ByteMatrix operator>>(int rounds){
+    ByteMatrix result (this->chunks);
+    for (int i = 0; i < this->length(); i++){
+        result.get_chunk(i) >>= rounds;
+    }
+    return result;
+  }
+  ByteMatrix shift_left_crypt(){
+    ByteMatrix result (this->chunks);
+    for (int i = 0; i < this->length(); i++){
+        result.get_chunk(i) = result.get_chunk(i).shift_left_crypt();
+    }
+    return result;
+  }
+  ByteMatrix shift_right_crypt(){
+    ByteMatrix result (this->chunks);
+    for (int i = 0; i < this->length(); i++){
+        result.get_chunk(i) = result.get_chunk(i).shift_right_crypt();
+    }
+    return result;
   }
 
   // cast di tipi
