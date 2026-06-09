@@ -1,15 +1,14 @@
+#include "../include/types.hpp"
 #include <vector>
 #include <string>
 #include <sstream>
 #include <iomanip>
 #include <cmath>
-
-typedef std::vector<int> ilist;
-typedef std::vector<int>::iterator ilist_iterator;
+ 
 using std::string, std::hex;
 
 class Bytearray{
-  ilist bytes = {};
+  types::ilist bytes = {};
   public:
   // costruttori
   Bytearray(int x=0){
@@ -20,19 +19,11 @@ class Bytearray{
       this->bytes.push_back(i);
     }
   }
-  Bytearray(ilist str){
-    for (int i : str){
-      this->bytes.push_back(i);
-    }
+  Bytearray(types::ilist str){
+    this->extend(str);
   }
 
   // metodi vettori
-  void push_back(string str){
-    this->bytes.push_back((int)((char)str[0]));
-  }
-  void push_back(Bytearray str){
-    this->bytes.insert(this->bytes.end(), str.bytes.begin(), str.bytes.end());
-  }
   void push_back(char str){
   this->bytes.push_back((int)str);
   }
@@ -45,10 +36,11 @@ class Bytearray{
       this->bytes.push_back(i);
     }
   }
+  void extend(types::ilist str){
+    this->bytes.insert(this->bytes.end(), str.begin(), str.end());
+  }
   void extend(Bytearray str){
-    for (int i : str){
-      this->bytes.push_back(i);
-    }
+    this->extend(str.bytes);
   }
 
   int length(){
@@ -76,10 +68,10 @@ class Bytearray{
     return this->bytes[idx >= 0? idx : this->length() + idx];
   }
   
-  ilist_iterator begin(){
+  types::ilist_iterator begin(){
     return this->bytes.begin();
   }
-  ilist_iterator end(){
+  types::ilist_iterator end(){
     return this->bytes.end();
   }
   
@@ -119,10 +111,10 @@ class Bytearray{
     return copy >> rounds-1;
   }
   void operator<<=(int rounds){
-    this->bytes = (ilist)(this->operator<<(rounds));
+    this->bytes = (types::ilist)(this->operator<<(rounds));
   }
   void operator>>=(int rounds){
-    this->bytes = (ilist)(this->operator>>(rounds));
+    this->bytes = (types::ilist)(this->operator>>(rounds));
   }
   
   // operatori logici
@@ -190,7 +182,7 @@ class Bytearray{
 
     return only_valid? str : ss.str();
   }
-  operator ilist(){
+  operator types::ilist(){
     return this->bytes;
   }
 
@@ -216,7 +208,7 @@ class Bytearray{
 
   // costruttori alternativi
   static Bytearray from_hex(string str){
-    ilist vct;
+    types::ilist vct;
 
     auto hex_to_int = [](string s) -> int{
       int t = 0;
@@ -239,7 +231,7 @@ class Bytearray{
     return Bytearray(vct);
   }
   static Bytearray from_oct(string str){
-    ilist vct;
+    types::ilist vct;
 
     auto oct_to_int = [](string s) -> int{
       int t = 0;
@@ -256,4 +248,4 @@ class Bytearray{
 
     return Bytearray(vct);
   }
-};
+}; 
