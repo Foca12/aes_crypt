@@ -43,6 +43,15 @@ class ByteChunk128{
       this->bytes[i] = in_bytes[i];
     }
   }
+  ByteChunk128(const int in_bytes[], int size){
+    memset(this->bytes, 0, sizeof(this->bytes));
+    if (size > num_chars){
+      throw std::invalid_argument("Input array dimension was bigger than "+std::to_string(num_chars)+", got "+std::to_string(size));
+    }
+    for (int i = 0; i < size; i++){
+      this->bytes[i] = in_bytes[i];
+    }
+  }
   ByteChunk128(){
     memset(this->bytes, 0, sizeof(this->bytes));
   }
@@ -104,9 +113,9 @@ class ByteChunk128{
     return this->slice(0, stop, 1);
   }
 
-  ByteChunk128& operator=(ByteChunk128 x){
+  ByteChunk128& operator=(const ByteChunk128& x){
     for (int i = 0; i < this->length(); i++){
-      this->operator[](i) = x[i];
+      this->operator[](i) = x.bytes[i];
     }
     return *this;
   }

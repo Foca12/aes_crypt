@@ -75,7 +75,7 @@ class Bytearray{
     return this->bytes.end();
   }
   
-  Bytearray& operator=(Bytearray x){
+  Bytearray& operator=(const Bytearray& x){
     this->bytes = x.bytes;
     return *this;
   }

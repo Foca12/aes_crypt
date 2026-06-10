@@ -28,7 +28,7 @@ class Key : public ByteChunk128{
     this->idx = this->idx > 0? this->idx - step : 0;
   }
 
-  Key& operator=(Key key){
+  Key& operator=(const Key& key){
     this->idx = key.idx;
     ByteChunk128::operator=(ByteChunk128(key.bytes, num_chars));
     return *this;
