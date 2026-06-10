@@ -2,6 +2,10 @@
 #include "../../include/matrix.hpp"
 #include "../../include/chunk.hpp"
 
+#define mul_01(x) (x)
+#define mul_02(x) xtime(x)
+#define mul_03(x) (xtime(x) ^ (x))
+
 int xtime(int x){
   if (x & 0x80){
     return (x ^ 0x1b) << 1;

@@ -75,8 +75,9 @@ class Bytearray{
     return this->bytes.end();
   }
   
-  void operator=(Bytearray x){
+  Bytearray& operator=(Bytearray x){
     this->bytes = x.bytes;
+    return *this;
   }
 
   // shift

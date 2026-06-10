@@ -1,7 +1,6 @@
 #include "../include/bytearray.hpp"
 #include "../include/types.hpp"
 #include "../include/constants.hpp"
-#include "../include/chunk.hpp"
 #include <stdexcept>
 #include <memory.h>
 #include <cmath>
@@ -105,10 +104,11 @@ class ByteChunk128{
     return this->slice(0, stop, 1);
   }
 
-  void operator=(ByteChunk128 x){
+  ByteChunk128& operator=(ByteChunk128 x){
     for (int i = 0; i < this->length(); i++){
       this->operator[](i) = x[i];
     }
+    return *this;
   }
 
   ByteChunk128 operator<< (int rounds) {

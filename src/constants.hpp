@@ -5,6 +5,11 @@ constexpr int compile_time_sqrt(int n, int i = 1) {
     return (i * i >= n) ? i : compile_time_sqrt(n, i + 1);
 }
 
+constexpr int words_per_key = 4;
+constexpr int n_keys = 11;
+constexpr int step = num_chars / words_per_key;
+constexpr int total_words = n_keys * words_per_key;
+
 constexpr int num_chars = 128/CHAR_BIT;
 constexpr int side = compile_time_sqrt(num_chars);
 
