@@ -12,20 +12,20 @@ X - 1.4 Definire l'array Rcon (Round Constants) con i 10 valori esadecimali prec
 
 [FASE 2] FUNZIONI MATEMATICHE AUSILIARIE (CAMPO DI GALOIS)
 --------------------------------------------------------------------------------
-2.1 Implementare la funzione xtime(uint8_t x) per la moltiplicazione per 0x02:
-    X - Esegue uno shift a sinistra di 1 bit.
-    X - Se il bit originale più significativo era 1, esegue uno XOR con 0x1B.
-2.2 Sviluppare le macro o funzioni di moltiplicazione per i coefficienti di MixColumns:
+X - 2.1 Implementare la funzione xtime(uint8_t x) per la moltiplicazione per 0x02:
+    Esegue uno shift a sinistra di 1 bit.
+    Se il bit originale più significativo era 1, esegue uno XOR con 0x1B.
+X - 2.2 Sviluppare le macro o funzioni di moltiplicazione per i coefficienti di MixColumns:
     - Moltiplicare per 0x01: resta invariato.
     - Moltiplicare per 0x02: xtime(x).
     - Moltiplicare per 0x03: xtime(x) ^ x.
 
 [FASE 3] ALGORITMO DI KEY EXPANSION (GENERAZIONE CHIAVI DI ROUND)
 --------------------------------------------------------------------------------
-3.1 Creare un buffer per la chiave espansa totale di 176 byte (16 byte * 11 round).
-3.2 Copiare i primi 16 byte della chiave utente direttamente all'inizio del buffer.
+X - 3.1 Creare un buffer per la chiave espansa totale di 176 byte (16 byte * 11 round).
+X - 3.2 Copiare i primi 16 byte della chiave utente direttamente all'inizio del buffer.
 3.3 Implementare il ciclo principale di espansione per le restanti 40 parole (word da 4 byte):
-    - Se l'indice della parola corrente e' multiplo di 4:
+    X - Se l'indice della parola corrente e' multiplo di 4:
         * RotWord: Ruota ciclicamente a sinistra i 4 byte di una posizione.
         * SubWord: Sostituisci i 4 byte usando la S-Box.
         * XOR con la costante Rcon corrispondente al round attuale.
@@ -34,11 +34,11 @@ X - 1.4 Definire l'array Rcon (Round Constants) con i 10 valori esadecimali prec
 
 [FASE 4] LE QUATTRO TRASFORMAZIONI CORE (INDICI 1D FISSATI)
 --------------------------------------------------------------------------------
-4.1 SubBytes:
+X - 4.1 SubBytes:
     - Un ciclo for da 0 a 15 che sostituisce state[i] con Sbox[state[i]].
 4.2 AddRoundKey:
     - Un ciclo for da 0 a 15 che applica lo XOR bitwise: state[i] ^= roundKey[i].
-4.3 ShiftRows (Hardcoded su indici 1D):
+X - 4.3 ShiftRows (Hardcoded su indici 1D):
     - Riga 0: Indici [0, 4, 8, 12] -> Restano invariati.
     - Riga 1: Indici [1, 5, 9, 13] -> Ruotano a sinistra di 1 byte.
     - Riga 2: Indici [2, 6, 10, 14] -> Ruotano a sinistra di 2 byte.
