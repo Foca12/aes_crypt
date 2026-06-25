@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./types.hpp"
+#include "types.hpp"
 #include <vector>
 #include <string>
 #include <sstream>
@@ -163,7 +163,7 @@ class Bytearray{
     }
     return xored;
     }
-
+  
   // conversioni di tipo
   operator string(){
     std::stringstream ss;
@@ -171,13 +171,13 @@ class Bytearray{
     bool only_valid = true;
 
     for (int i : this->bytes) {
-      if (i < 32 || i > 126){
+      if ((i < 32 || i > 126) && i != 0){
         only_valid = false;
       }
     }
 
     for (int i : this->bytes) {
-      if (only_valid){
+      if (only_valid && i != 0){
         str += (char) i;
       }
       else {

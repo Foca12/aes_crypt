@@ -1,11 +1,14 @@
 #pragma once
 
-#include "./bytearray.hpp"
-#include "./constants.hpp"
-#include "./types.hpp"
+#include "bytearray.hpp"
+#include "constants.hpp"
+#include "types.hpp"
 #include <stdexcept>
 #include <memory.h>
+#include <vector>
 #include <cmath>
+
+using std::string;
 
 class ByteChunk128{
   void basic_constructor(Bytearray bytes){
@@ -20,13 +23,15 @@ class ByteChunk128{
       this->bytes[i] = bytes[i]; // setta array
     }
   }
-
   
   public:
   int bytes[chars_per_chunk];
   
   ByteChunk128(int x=0){
     memset(this->bytes, x, sizeof(this->bytes));
+  }
+  ByteChunk128(string bytes){
+    this->basic_constructor(Bytearray(bytes));
   }
   ByteChunk128(Bytearray bytes){
     this->basic_constructor(bytes);
@@ -38,19 +43,35 @@ class ByteChunk128{
     this->basic_constructor(Bytearray(in_bytes, size));
   }
   
-  types::chunk_rows get_rows(){
-    types::chunk_rows rows;
+  std::vector<Bytearray> get_rows(){
+    std::vector<Bytearray> rows;
     // per ogni start di riga (0, 1, 2, 3)
-    int array_row_idx = 0;
     for (int chunk_row_idx = 0; chunk_row_idx < chunk_side; chunk_row_idx++){
-      rows.push_back(types::ilist {});
+      Bytearray row = {};
       // scorri del chunk_side per prendere il valore della riga (2, 6, 10, 14)
       for (int chunk_idx = chunk_row_idx; chunk_idx < chars_per_chunk; chunk_idx += chunk_side){
-        rows[array_row_idx].push_back(bytes[chunk_idx]);
+        row.push_back(bytes[chunk_idx]);
       }
-      array_row_idx++;
+      rows.push_back(row);
     }
     return rows;
+  }
+  Bytearray get_row(int idx){
+    return this->get_rows()[idx];
+  }
+  void set_row(int row_idx, types::ilist value){
+    int count = 0;
+    for (int i = row_idx; i < chars_per_chunk; i += chunk_side){
+      this->operator[](i) = value[count];
+      count++;
+    }
+  }
+  void set_row(int row_idx, Bytearray value){
+    int count = 0;
+    for (int i = row_idx; i < chars_per_chunk; i += chunk_side){
+      this->operator[](i) = value[count];
+      count++;
+    }
   }
 
   int get_first_null(){
@@ -119,7 +140,7 @@ class ByteChunk128{
     if (rounds == 0){
       return ByteChunk128(this->bytes, chars_per_chunk);
     }
-    types::chunk_rows rows = this->get_rows();
+    std::vector<Bytearray> rows = this->get_rows();
     ByteChunk128 result;
     for (auto row : rows){
       Bytearray shifted_row;
@@ -135,7 +156,7 @@ class ByteChunk128{
     if (rounds == 0){
       return ByteChunk128(this->bytes, chars_per_chunk);
     }
-    types::chunk_rows rows = this->get_rows();
+    std::vector<Bytearray> rows = this->get_rows();
     ByteChunk128 result;
     for (auto row : rows){
       Bytearray shifted_row;
@@ -155,7 +176,7 @@ class ByteChunk128{
   }
 
   ByteChunk128 shift_left_crypt() {
-    types::chunk_rows rows = this->get_rows();
+    std::vector<Bytearray> rows = this->get_rows();
     ByteChunk128 result;
     for (int row_idx = 0; row_idx < chunk_side; row_idx++){
       Bytearray shifted_row (rows[row_idx]);
@@ -165,7 +186,7 @@ class ByteChunk128{
     return result;
   }
   ByteChunk128 shift_right_crypt() {
-    types::chunk_rows rows = this->get_rows();
+    std::vector<Bytearray> rows = this->get_rows();
     ByteChunk128 result;
     for (int row_idx = 0; row_idx < chunk_side; row_idx++){
       Bytearray shifted_row;
