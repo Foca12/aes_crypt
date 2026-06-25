@@ -1,6 +1,8 @@
-#include "../include/bytearray.hpp"
-#include "../include/types.hpp"
-#include "../include/constants.hpp"
+#pragma once
+
+#include "./bytearray.hpp"
+#include "./constants.hpp"
+#include "./types.hpp"
 #include <stdexcept>
 #include <memory.h>
 #include <cmath>

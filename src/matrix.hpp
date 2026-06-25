@@ -1,21 +1,24 @@
-#include "../include/chunk.hpp"
-#include "../include/types.hpp"
-#include "../include/constants.hpp"
-#include "../include/matrix.hpp"
+#pragma once
+
+#include "./chunk.hpp"
+#include "./constants.hpp"
+#include "./types.hpp"
 #include <string>
 #include <memory.h>
 #include <vector>
 #include <cmath>
 
+typedef std::vector<ByteChunk128> bclist;
+typedef bclist::iterator bclist_iterator;
 
 class ByteMatrix{
-  types::bclist chunks; // vettore di chunks
+  bclist chunks; // vettore di chunks
   
   public:
   ByteMatrix(int x=0){
     this->chunks.insert(this->chunks.end(), x, ByteChunk128());
   }
-  ByteMatrix(types::bclist list){
+  ByteMatrix(bclist list){
     this->chunks = list;
   }
 
@@ -24,7 +27,7 @@ class ByteMatrix{
     return ByteMatrix::divide_bytearray(Bytearray(bytes));
   }
   static ByteMatrix divide_bytearray(Bytearray bytes){
-    types::bclist chunks;
+    bclist chunks;
     int i = 0;
     for (; i < bytes.length()-16; i += chars_per_chunk){
       chunks.push_back(ByteChunk128(bytes.slice(i, i+chars_per_chunk))); // riempe vettore chunks con i chunks
@@ -55,10 +58,10 @@ class ByteMatrix{
   ByteChunk128& get_chunk(int idx){
     return this->chunks[idx];
   }
-  types::bclist_iterator begin(){
+  bclist_iterator begin(){
     return this->chunks.begin();
   }
-  types::bclist_iterator end(){
+  bclist_iterator end(){
     return this->chunks.end();
   }
   ByteMatrix operator<<(int rounds){

@@ -1,6 +1,8 @@
-#include "../../include/constants.hpp"
-#include "../../include/matrix.hpp"
-#include "../../include/chunk.hpp"
+#pragma once
+
+#include "../constants.hpp"
+#include "../matrix.hpp"
+#include "../chunk.hpp"
 
 #define mul_01(x) (x)
 #define mul_02(x) xtime(x)

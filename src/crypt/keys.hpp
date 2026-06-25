@@ -1,8 +1,10 @@
-#include "../../include/chunk.hpp"
+#pragma once
+
+#include "../chunk.hpp"
 #include "./substitute.hpp"
-#include "../../include/bytearray.hpp"
-#include "../../include/types.hpp"
-#include "../../include/constants.hpp"
+#include "../bytearray.hpp"
+#include "..//types.hpp"
+#include "../constants.hpp"
 #include <memory>
 #include <cmath>
 

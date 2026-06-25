@@ -1,4 +1,5 @@
-#include "../include/constants.hpp"
+#pragma once
+
 #include <cmath>
 
 #define words_per_key 4

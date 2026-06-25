@@ -1,4 +1,6 @@
-#include "../../include/matrix.hpp"
+#pragma once
+
+#include "../matrix.hpp"
 
 namespace crypt_operations{
   ByteMatrix shift_left(ByteMatrix input){

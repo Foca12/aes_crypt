@@ -1,17 +1,18 @@
-#include "../../include/crypt_operations.hpp"
-#include "../../include/matrix.hpp"
-#include "../../include/constants.hpp"
+#pragma once
+
+#include "../matrix.hpp"
+#include "../constants.hpp"
 
 namespace crypt_operations
 {
   ByteMatrix crypt_substitute(ByteMatrix input){
-    for (int i = 0; i < num_chars * input.length(); i++){
+    for (int i = 0; i < chars_per_chunk * input.length(); i++){
       input[i] = sbox[input[i]];
     }
     return input;
     }
   ByteChunk128 crypt_substitute(ByteChunk128 input){
-    for (int i = 0; i < num_chars; i++){
+    for (int i = 0; i < chars_per_chunk; i++){
       input[i] = sbox[input[i]];
     }
     return input;
@@ -24,13 +25,13 @@ namespace crypt_operations
   }
 
   ByteMatrix decrypt_substitute(ByteMatrix input){
-    for (int i = 0; i < num_chars * input.length(); i++){
+    for (int i = 0; i < chars_per_chunk * input.length(); i++){
       input[i] = inv_sbox[input[i]];
     }
     return input;
   }
   ByteChunk128 decrypt_substitute(ByteChunk128 input){
-    for (int i = 0; i < num_chars; i++){
+    for (int i = 0; i < chars_per_chunk; i++){
       input[i] = inv_sbox[input[i]];
     }
     return input;
