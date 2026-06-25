@@ -21,18 +21,13 @@ class ByteChunk128{
     }
   }
 
-  int get_first_null(){
-    for (int i = 0; i < chars_per_chunk; i++){
-      if (this->operator[](i) == 0){
-        return i;
-      }
-    }
-    return -1;
-  }
-
+  
   public:
   int bytes[chars_per_chunk];
   
+  ByteChunk128(int x=0){
+    memset(this->bytes, x, sizeof(this->bytes));
+  }
   ByteChunk128(Bytearray bytes){
     this->basic_constructor(bytes);
   };
@@ -41,9 +36,6 @@ class ByteChunk128{
   };
   ByteChunk128(int in_bytes[], int size){
     this->basic_constructor(Bytearray(in_bytes, size));
-  }
-  ByteChunk128(){
-    memset(this->bytes, 0, sizeof(this->bytes));
   }
   
   types::chunk_rows get_rows(){
@@ -61,6 +53,14 @@ class ByteChunk128{
     return rows;
   }
 
+  int get_first_null(){
+    for (int i = 0; i < chars_per_chunk; i++){
+      if (this->operator[](i) == 0){
+        return i;
+      }
+    }
+    return -1;
+  }
   int length(){
     int idx = this->get_first_null();
     return idx == -1? chars_per_chunk : idx;
@@ -69,20 +69,25 @@ class ByteChunk128{
     return this->length();
   }
 
-  int push_back(int x){
+  void push_back(int x){
     int idx = this->get_first_null();
     if (idx != -1){
       this->operator[](idx) = x;
     }
-    return idx == -1;
   }
-  
   void extend(Bytearray bytes){
     int idx = this->get_first_null();
     for (int i = idx; i < chars_per_chunk; i++){
       if (i - idx == bytes.length()) return;
       this->operator[](i) = bytes[i - idx];
     }
+  }
+
+  int* begin(){
+    return this->bytes;
+  }
+  int* end(){
+    return this->begin() + chars_per_chunk;
   }
 
   int& operator[](int idx){

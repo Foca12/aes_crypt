@@ -43,6 +43,42 @@ class ByteMatrix{
   int size(){
     return this->length();
   }
+  
+  void push_back(int x){
+    (this->get_chunk(-1)).push_back(x);
+  }
+  void extend(Bytearray x){
+    int padding = this->get_padding();
+    if (padding == 0){
+      ByteChunk128 empty;
+      this->chunks.insert(this->chunks.end(), empty.begin(), empty.end());
+      this->extend(x);
+    }
+    bool end = false;
+    if (padding > x.length()){
+      padding = x.length();
+      end = true;
+    }
+    this->get_chunk(-1).extend(x.slice(padding));
+    if (!end){
+      this->extend(x.slice(padding, x.length()));
+    }
+  }
+
+  ByteMatrix slice(int start, int stop, int step){
+    ByteMatrix result;
+    for (int i = start; i < stop; i += step){
+      result.push_back(this->operator[](i));
+    }
+    return result;
+  }
+  ByteMatrix slice(int start, int stop){
+    return this->slice(start, stop, 1);
+  }
+  ByteMatrix slice(int stop){
+    return this->slice(0, stop, 1);
+  }
+
   int& operator[](int idx){
     int chunk_idx = floor(abs(idx) / chars_per_chunk);
     int num_idx = abs(idx) % chars_per_chunk;
@@ -56,14 +92,19 @@ class ByteMatrix{
     return this->chunks[chunk_idx >= 0? chunk_idx : this->length()+chunk_idx][num_idx >= 0? num_idx : chars_per_chunk+num_idx];
   }
   ByteChunk128& get_chunk(int idx){
-    return this->chunks[idx];
+    return this->chunks[idx >= 0? idx : this->length() + idx];
   }
+  int get_padding(){
+    return chars_per_chunk - (this->get_chunk(-1).length());
+  }
+
   bclist_iterator begin(){
     return this->chunks.begin();
   }
   bclist_iterator end(){
     return this->chunks.end();
   }
+  
   ByteMatrix operator<<(int rounds){
     ByteMatrix result (this->chunks);
     for (int i = 0; i < this->length(); i++){
