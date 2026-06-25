@@ -101,4 +101,48 @@ class ByteMatrix{
     }
     return str;
   }
+  operator types::ilist(){
+    types::ilist list = {};
+    for (auto i : this->chunks){
+      list.insert(list.end(), ((types::ilist)i).begin(), ((types::ilist)i).end());
+    }
+    return list;
+  }
+  operator Bytearray(){
+    Bytearray array;
+    for (auto i : this->chunks){
+      array.extend((Bytearray) i);
+    }
+    return array;
+  }
+
+  // conversioni di formato
+  string hex(){
+    std::stringstream ss;
+    
+    for (auto i : this->chunks) {
+      ss << std::hex << std::setw(2) << std::setfill('0') << i.hex();
+    }
+
+    return ss.str();
+  }
+  string oct(){
+    std::stringstream ss;
+    
+    for (auto i : this->chunks) {
+      ss << std::oct << std::setw(3) << std::setfill('0') << i.oct();
+    }
+
+    return ss.str();
+  }
+
+  // costruttori alternativi
+  static ByteMatrix from_hex(string str){
+    Bytearray array = Bytearray::from_hex(str);
+    return ByteMatrix::divide_bytearray(array);
+  }
+  static ByteMatrix from_oct(string str){
+    Bytearray array = Bytearray::from_oct(str);
+    return ByteMatrix::divide_bytearray(array);
+  }
 };

@@ -176,14 +176,16 @@ class ByteChunk128{
     bool only_valid = true;
 
     for (int i : this->bytes) {
-      if (i < 32 || i > 126){
+      if ((i < 32 || i > 126) && i != 0){
         only_valid = false;
       }
     }
 
     for (int i : this->bytes) {
       if (only_valid){
-        str += (char) i;
+        if (i != 0){
+          str += (char) i;
+        }
       }
       else {
         ss << "\\x";
@@ -195,6 +197,9 @@ class ByteChunk128{
   }
   operator Bytearray(){
     return Bytearray(this->bytes, chars_per_chunk);
+  }
+  operator types::ilist(){
+    return (types::ilist) (Bytearray(this->bytes, chars_per_chunk));
   }
 
   string hex(){
