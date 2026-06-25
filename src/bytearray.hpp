@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
- 
+
 using std::string, std::hex;
 
 class Bytearray{
@@ -21,6 +21,9 @@ class Bytearray{
   }
   Bytearray(types::ilist str){
     this->extend(str);
+  }
+  Bytearray(int str[], int length){
+    this->bytes.insert(this->bytes.end(), str, str+length);
   }
 
   // metodi vettori

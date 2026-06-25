@@ -6,7 +6,8 @@
 #include <memory.h>
 #include <vector>
 #include <cmath>
-  
+
+
 class ByteMatrix{
   types::bclist chunks; // vettore di chunks
   
@@ -25,8 +26,8 @@ class ByteMatrix{
   static ByteMatrix divide_bytearray(Bytearray bytes){
     types::bclist chunks;
     int i = 0;
-    for (; i < bytes.length()-16; i += num_chars){
-      chunks.push_back(ByteChunk128(bytes.slice(i, i+num_chars))); // riempe vettore chunks con i chunks
+    for (; i < bytes.length()-16; i += chars_per_chunk){
+      chunks.push_back(ByteChunk128(bytes.slice(i, i+chars_per_chunk))); // riempe vettore chunks con i chunks
     }
     chunks.push_back(ByteChunk128(bytes.slice(i, bytes.length()))); // aggiunge chunk con padding
     return ByteMatrix(chunks);
@@ -40,18 +41,16 @@ class ByteMatrix{
     return this->length();
   }
   int& operator[](int idx){
-    // int chunk_idx = floor((idx >= 0? idx : this->length()*num_chars + idx) / num_chars);
-    // int num_idx = idx >= 0? idx % num_chars : num_chars - ((-idx) % num_chars);
-    int chunk_idx = floor(abs(idx) / num_chars);
-    int num_idx = abs(idx) % num_chars;
+    int chunk_idx = floor(abs(idx) / chars_per_chunk);
+    int num_idx = abs(idx) % chars_per_chunk;
     if (idx < 0){
       chunk_idx = this->length() - chunk_idx - 1;
-      num_idx = num_chars - num_idx;
+      num_idx = chars_per_chunk - num_idx;
     }
     return this->chunks[chunk_idx][num_idx];
   }
   int& at(int chunk_idx, int num_idx){
-    return this->chunks[chunk_idx >= 0? chunk_idx : this->length()+chunk_idx][num_idx >= 0? num_idx : num_chars+num_idx];
+    return this->chunks[chunk_idx >= 0? chunk_idx : this->length()+chunk_idx][num_idx >= 0? num_idx : chars_per_chunk+num_idx];
   }
   ByteChunk128& get_chunk(int idx){
     return this->chunks[idx];

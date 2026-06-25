@@ -1,17 +1,12 @@
 #include "../include/constants.hpp"
 #include <cmath>
 
-constexpr int compile_time_sqrt(int n, int i = 1) {
-    return (i * i >= n) ? i : compile_time_sqrt(n, i + 1);
-}
+#define words_per_key 4
+#define chars_per_word 4
+#define n_keys 11
 
-constexpr int words_per_key = 4;
-constexpr int n_keys = 11;
-constexpr int step = num_chars / words_per_key;
-constexpr int total_words = n_keys * words_per_key;
-
-constexpr int num_chars = 128/CHAR_BIT;
-constexpr int side = compile_time_sqrt(num_chars);
+#define chars_per_chunk 16
+#define chunk_side 4
 
 const int sbox[256] = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,

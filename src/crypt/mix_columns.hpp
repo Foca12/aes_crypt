@@ -13,7 +13,7 @@ int xtime(int x){
   return x << 1;
 }
 ByteChunk128 xtime(ByteChunk128 x){
-  for (int i = 0; i < num_chars; i++){
+  for (int i = 0; i < chars_per_chunk; i++){
     x[i] = xtime(x[i]);
   }
   return x;
