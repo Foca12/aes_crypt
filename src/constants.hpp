@@ -1,6 +1,60 @@
 #pragma once
 
+#include <sstream>
+#include <iomanip>
 #include <cmath>
+#include <vector>
+#include <string>
+
+std::string convert_to_string(std::vector<int> vct){
+  std::stringstream ss;
+    std::string str;
+    bool only_valid = true;
+
+    for (int i : vct) {
+      if ((i < 32 || i > 126) && i != 0){
+        only_valid = false;
+      }
+    }
+
+    for (int i : vct) {
+      if (only_valid && i != 0){
+        str += (char) i;
+      }
+      else {
+        ss << "\\x";
+        ss << std::hex << std::setw(2) << std::setfill('0') << i;
+      }
+    }
+
+    return only_valid? str : ss.str();
+}
+std::string convert_to_string(int vct[], int size){
+  std::stringstream ss;
+    std::string str;
+    bool only_valid = true;
+
+    for (int n = 0; n < size; n++) {
+      int i = vct[n];
+      if ((i < 32 || i > 126) && i != 0){
+        only_valid = false;
+      }
+    }
+
+    for (int n = 0; n < size; n++) {
+      int i = vct[n];
+      if (only_valid && i != 0){
+        str += (char) i;
+      }
+      else {
+        ss << "\\x";
+        ss << std::hex << std::setw(2) << std::setfill('0') << i;
+      }
+    }
+
+    return only_valid? str : ss.str();
+}
+
 
 #define words_per_key 4
 #define chars_per_word 4
@@ -46,5 +100,5 @@ const int inv_sbox[256] = {
     0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };
 const int rcon[11] = {
-    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
+    0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
 };

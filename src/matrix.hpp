@@ -95,7 +95,7 @@ class ByteMatrix{
     return this->chunks[idx >= 0? idx : this->length() + idx];
   }
   int get_padding(){
-    return chars_per_chunk - (this->get_chunk(-1).length());
+    return this->get_chunk(-1).padding();
   }
 
   bclist_iterator begin(){

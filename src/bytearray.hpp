@@ -1,10 +1,9 @@
 #pragma once
 
 #include "types.hpp"
+#include "constants.hpp"
 #include <vector>
 #include <string>
-#include <sstream>
-#include <iomanip>
 #include <cmath>
 
 using std::string, std::hex;
@@ -162,31 +161,11 @@ class Bytearray{
       xored.push_back(xored_char);
     }
     return xored;
-    }
+  }
   
   // conversioni di tipo
   operator string(){
-    std::stringstream ss;
-    string str;
-    bool only_valid = true;
-
-    for (int i : this->bytes) {
-      if ((i < 32 || i > 126) && i != 0){
-        only_valid = false;
-      }
-    }
-
-    for (int i : this->bytes) {
-      if (only_valid && i != 0){
-        str += (char) i;
-      }
-      else {
-        ss << "\\x";
-        ss << std::hex << std::setw(2) << std::setfill('0') << i;
-      }
-    }
-
-    return only_valid? str : ss.str();
+    return convert_to_string(this->bytes);
   }
   operator types::ilist(){
     return this->bytes;

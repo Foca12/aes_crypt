@@ -4,6 +4,7 @@
 #include "constants.hpp"
 #include "types.hpp"
 #include <stdexcept>
+#include <iostream>
 #include <memory.h>
 #include <vector>
 #include <cmath>
@@ -57,7 +58,7 @@ class ByteChunk128{
     return rows;
   }
   Bytearray get_row(int idx){
-    return this->get_rows()[idx];
+    return this->get_rows()[idx < 0? chunk_side + idx : idx];
   }
   void set_row(int row_idx, types::ilist value){
     int count = 0;
@@ -69,6 +70,37 @@ class ByteChunk128{
   void set_row(int row_idx, Bytearray value){
     int count = 0;
     for (int i = row_idx; i < chars_per_chunk; i += chunk_side){
+      this->operator[](i) = value[count];
+      count++;
+    }
+  }
+  
+  std::vector<Bytearray> get_columns(){
+    std::vector<Bytearray> columns;
+    // per ogni start di colonna (0, 4, 8, 12)
+    for (int chunk_column_idx = 0; chunk_column_idx < chars_per_chunk; chunk_column_idx += chunk_side){
+      Bytearray column = {};
+      // scorri di 1 per prendere il valore della colonna (4, 5, 6, 7)
+      for (int chunk_idx = chunk_column_idx; chunk_idx < chunk_side+chunk_column_idx; chunk_idx++){
+        column.push_back(bytes[chunk_idx]);
+      }
+      columns.push_back(column);
+    }
+    return columns;
+  }
+  Bytearray get_column(int idx){
+    return this->get_columns()[idx < 0? chunk_side + idx : idx];
+  }
+  void set_column(int column_idx, types::ilist value){
+    int count = 0;
+    for (int i = column_idx*chunk_side; count < chunk_side; i++){
+      this->operator[](i) = value[count];
+      count++;
+    }
+  }
+  void set_column(int column_idx, Bytearray value){
+    int count = 0;
+    for (int i = column_idx*chunk_side; count < chunk_side; i++){
       this->operator[](i) = value[count];
       count++;
     }
@@ -88,6 +120,9 @@ class ByteChunk128{
   }
   int size(){
     return this->length();
+  }
+  int padding(){
+    return chars_per_chunk-this->length();
   }
 
   void push_back(int x){
@@ -130,7 +165,7 @@ class ByteChunk128{
   }
 
   ByteChunk128& operator=(const ByteChunk128& x){
-    for (int i = 0; i < this->length(); i++){
+    for (int i = 0; i < chars_per_chunk; i++){
       this->operator[](i) = x.bytes[i];
     }
     return *this;
@@ -197,29 +232,7 @@ class ByteChunk128{
   }
 
   operator string(){
-    std::stringstream ss;
-    string str;
-    bool only_valid = true;
-
-    for (int i : this->bytes) {
-      if ((i < 32 || i > 126) && i != 0){
-        only_valid = false;
-      }
-    }
-
-    for (int i : this->bytes) {
-      if (only_valid){
-        if (i != 0){
-          str += (char) i;
-        }
-      }
-      else {
-        ss << "\\x";
-        ss << std::hex << std::setw(2) << std::setfill('0') << i;
-      }
-    }
-
-    return only_valid? str : ss.str();
+    return convert_to_string(this->bytes, chars_per_chunk);
   }
   operator Bytearray(){
     return Bytearray(this->bytes, chars_per_chunk);
@@ -231,8 +244,8 @@ class ByteChunk128{
   string hex(){
     std::stringstream ss;
     
-    for (int i : this->bytes) {
-      ss << std::hex << std::setw(2) << std::setfill('0') << i;
+    for (int i = 0; i < chars_per_chunk; i++) {
+      ss << std::hex << std::setw(2) << std::setfill('0') << this->bytes[i];
     }
 
     return ss.str();
@@ -248,8 +261,8 @@ class ByteChunk128{
   }
 
   static ByteChunk128 from_hex(string str){
-    if (str.size() > chars_per_chunk){
-      throw std::invalid_argument("Input array dimension is bigger than "+std::to_string(n_keys)+", got "+std::to_string(str.size()));
+    if (str.size() != chars_per_chunk*2){
+      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*2)+", got "+std::to_string(str.size()));
     }
     int vct[chars_per_chunk];
 
@@ -269,13 +282,13 @@ class ByteChunk128{
     };
 
     for (int i = 0; i < str.length(); i += 2){
-      vct[i] = hex_to_int({str[i], str[i+1]});
+      vct[i/2] = hex_to_int({str[i], str[i+1]});
     }
     return ByteChunk128(vct, chars_per_chunk);
   }
   static ByteChunk128 from_oct(string str){
-    if (str.size() > chars_per_chunk){
-      throw std::invalid_argument("Input array dimension is bigger than "+std::to_string(n_keys)+", got "+std::to_string(str.size()));
+    if (str.size() != chars_per_chunk*3){
+      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*3)+", got "+std::to_string(str.size()));
     }
     int vct[chars_per_chunk];
 
@@ -294,4 +307,4 @@ class ByteChunk128{
 
     return ByteChunk128(vct, chars_per_chunk);
   }
-}; 
+};
