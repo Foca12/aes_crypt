@@ -164,13 +164,32 @@ class ByteChunk128{
     return this->slice(0, stop, 1);
   }
 
-  ByteChunk128& operator=(const ByteChunk128& x){
+  ByteChunk128 operator=(const ByteChunk128& x){
     for (int i = 0; i < chars_per_chunk; i++){
       this->operator[](i) = x.bytes[i];
     }
     return *this;
   }
 
+  ByteChunk128 operator^(ByteChunk128 key){
+    for (int i = 0; i < chars_per_chunk; i++){
+      key[i] = key[i] ^ this->operator[](i);
+    }
+    return key;
+  }
+  ByteChunk128 operator&(ByteChunk128 key){
+    for (int i = 0; i < chars_per_chunk; i++){
+      key[i] = key[i] & this->operator[](i);
+    }
+    return key;
+  }
+  ByteChunk128 operator|(ByteChunk128 key){
+    for (int i = 0; i < chars_per_chunk; i++){
+      key[i] = key[i] | this->operator[](i);
+    }
+    return key;
+  }
+  
   ByteChunk128 operator<< (int rounds) {
     if (rounds == 0){
       return ByteChunk128(this->bytes, chars_per_chunk);
@@ -210,23 +229,17 @@ class ByteChunk128{
     this->operator=(this->operator>>(rounds));
   }
 
-  ByteChunk128 shift_left_crypt() {
-    std::vector<Bytearray> rows = this->get_rows();
+  ByteChunk128 shift_rows_left() {
     ByteChunk128 result;
     for (int row_idx = 0; row_idx < chunk_side; row_idx++){
-      Bytearray shifted_row (rows[row_idx]);
-      shifted_row <<= row_idx;
-      result.extend(shifted_row);
+      result.set_row(row_idx, this->get_row(row_idx) << row_idx);
     }
     return result;
   }
-  ByteChunk128 shift_right_crypt() {
-    std::vector<Bytearray> rows = this->get_rows();
+  ByteChunk128 shift_rows_right() {
     ByteChunk128 result;
     for (int row_idx = 0; row_idx < chunk_side; row_idx++){
-      Bytearray shifted_row;
-      shifted_row >>= row_idx;
-      result.extend(shifted_row);
+      result.set_row(row_idx, this->get_row(row_idx) >> row_idx);
     }
     return result;
   }

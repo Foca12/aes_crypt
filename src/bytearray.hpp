@@ -79,7 +79,7 @@ class Bytearray{
     return this->bytes.end();
   }
   
-  Bytearray& operator=(const Bytearray& x){
+  Bytearray operator=(const Bytearray& x){
     this->bytes = x.bytes;
     return *this;
   }
@@ -154,6 +154,10 @@ class Bytearray{
 
     if (this->length() == 0){
       return xored;
+    };
+
+    if (arr.length() == 0){
+      return *this;
     };
 
     for (int i = 0; i < this->length(); i++){
