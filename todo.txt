@@ -2,6 +2,8 @@
 FASE DI SVILUPPO DA ZERO DI AES-128 IN C++ (ARRAY LINEARE 1D)
 ================================================================================
 
+FAI IN KEYS IL FROM HEX
+
 [FASE 1] DEFINIZIONE DELLE STRUTTURE DATI E TABELLE DI LOOKUP
 --------------------------------------------------------------------------------
 X - 1.1 Definire il blocco dati primario (byte chunk) come array lineare di 16 byte
@@ -24,8 +26,8 @@ X - 2.2 Sviluppare le macro o funzioni di moltiplicazione per i coefficienti di 
 --------------------------------------------------------------------------------
 X - 3.1 Creare un buffer per la chiave espansa totale di 176 byte (16 byte * 11 round).
 X - 3.2 Copiare i primi 16 byte della chiave utente direttamente all'inizio del buffer.
-3.3 Implementare il ciclo principale di espansione per le restanti 40 parole (word da 4 byte):
-    X - Se l'indice della parola corrente e' multiplo di 4:
+X - 3.3 Implementare il ciclo principale di espansione per le restanti 40 parole (word da 4 byte):
+    - Se l'indice della parola corrente e' multiplo di 4:
         * RotWord: Ruota ciclicamente a sinistra i 4 byte di una posizione.
         * SubWord: Sostituisci i 4 byte usando la S-Box.
         * XOR con la costante Rcon corrispondente al round attuale.
@@ -36,7 +38,7 @@ X - 3.2 Copiare i primi 16 byte della chiave utente direttamente all'inizio del 
 --------------------------------------------------------------------------------
 X - 4.1 SubBytes:
     - Un ciclo for da 0 a 15 che sostituisce state[i] con Sbox[state[i]].
-4.2 AddRoundKey:
+X - 4.2 AddRoundKey:
     - Un ciclo for da 0 a 15 che applica lo XOR bitwise: state[i] ^= roundKey[i].
 X - 4.3 ShiftRows (Hardcoded su indici 1D):
     - Riga 0: Indici [0, 4, 8, 12] -> Restano invariati.

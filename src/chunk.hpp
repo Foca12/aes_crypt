@@ -1,11 +1,15 @@
 #pragma once
 
-#include "./bytearray.hpp"
-#include "./constants.hpp"
-#include "./types.hpp"
+#include "bytearray.hpp"
+#include "constants.hpp"
+#include "types.hpp"
 #include <stdexcept>
+#include <iostream>
 #include <memory.h>
+#include <vector>
 #include <cmath>
+
+using std::string;
 
 class ByteChunk128{
   void basic_constructor(Bytearray bytes){
@@ -20,19 +24,16 @@ class ByteChunk128{
       this->bytes[i] = bytes[i]; // setta array
     }
   }
-
-  int get_first_null(){
-    for (int i = 0; i < chars_per_chunk; i++){
-      if (this->operator[](i) == 0){
-        return i;
-      }
-    }
-    return -1;
-  }
-
+  
   public:
   int bytes[chars_per_chunk];
   
+  ByteChunk128(int x=0){
+    memset(this->bytes, x, sizeof(this->bytes));
+  }
+  ByteChunk128(string bytes){
+    this->basic_constructor(Bytearray(bytes));
+  }
   ByteChunk128(Bytearray bytes){
     this->basic_constructor(bytes);
   };
@@ -42,25 +43,77 @@ class ByteChunk128{
   ByteChunk128(int in_bytes[], int size){
     this->basic_constructor(Bytearray(in_bytes, size));
   }
-  ByteChunk128(){
-    memset(this->bytes, 0, sizeof(this->bytes));
-  }
   
-  types::chunk_rows get_rows(){
-    types::chunk_rows rows;
+  std::vector<Bytearray> get_rows(){
+    std::vector<Bytearray> rows;
     // per ogni start di riga (0, 1, 2, 3)
-    int array_row_idx = 0;
     for (int chunk_row_idx = 0; chunk_row_idx < chunk_side; chunk_row_idx++){
-      rows.push_back(types::ilist {});
+      Bytearray row = {};
       // scorri del chunk_side per prendere il valore della riga (2, 6, 10, 14)
       for (int chunk_idx = chunk_row_idx; chunk_idx < chars_per_chunk; chunk_idx += chunk_side){
-        rows[array_row_idx].push_back(bytes[chunk_idx]);
+        row.push_back(bytes[chunk_idx]);
       }
-      array_row_idx++;
+      rows.push_back(row);
     }
     return rows;
   }
+  Bytearray get_row(int idx){
+    return this->get_rows()[idx < 0? chunk_side + idx : idx];
+  }
+  void set_row(int row_idx, types::ilist value){
+    int count = 0;
+    for (int i = row_idx; i < chars_per_chunk; i += chunk_side){
+      this->operator[](i) = value[count];
+      count++;
+    }
+  }
+  void set_row(int row_idx, Bytearray value){
+    int count = 0;
+    for (int i = row_idx; i < chars_per_chunk; i += chunk_side){
+      this->operator[](i) = value[count];
+      count++;
+    }
+  }
+  
+  std::vector<Bytearray> get_columns(){
+    std::vector<Bytearray> columns;
+    // per ogni start di colonna (0, 4, 8, 12)
+    for (int chunk_column_idx = 0; chunk_column_idx < chars_per_chunk; chunk_column_idx += chunk_side){
+      Bytearray column = {};
+      // scorri di 1 per prendere il valore della colonna (4, 5, 6, 7)
+      for (int chunk_idx = chunk_column_idx; chunk_idx < chunk_side+chunk_column_idx; chunk_idx++){
+        column.push_back(bytes[chunk_idx]);
+      }
+      columns.push_back(column);
+    }
+    return columns;
+  }
+  Bytearray get_column(int idx){
+    return this->get_columns()[idx < 0? chunk_side + idx : idx];
+  }
+  void set_column(int column_idx, types::ilist value){
+    int count = 0;
+    for (int i = column_idx*chunk_side; count < chunk_side; i++){
+      this->operator[](i) = value[count];
+      count++;
+    }
+  }
+  void set_column(int column_idx, Bytearray value){
+    int count = 0;
+    for (int i = column_idx*chunk_side; count < chunk_side; i++){
+      this->operator[](i) = value[count];
+      count++;
+    }
+  }
 
+  int get_first_null(){
+    for (int i = 0; i < chars_per_chunk; i++){
+      if (this->operator[](i) == 0){
+        return i;
+      }
+    }
+    return -1;
+  }
   int length(){
     int idx = this->get_first_null();
     return idx == -1? chars_per_chunk : idx;
@@ -68,21 +121,29 @@ class ByteChunk128{
   int size(){
     return this->length();
   }
+  int padding(){
+    return chars_per_chunk-this->length();
+  }
 
-  int push_back(int x){
+  void push_back(int x){
     int idx = this->get_first_null();
     if (idx != -1){
       this->operator[](idx) = x;
     }
-    return idx == -1;
   }
-  
   void extend(Bytearray bytes){
     int idx = this->get_first_null();
     for (int i = idx; i < chars_per_chunk; i++){
       if (i - idx == bytes.length()) return;
       this->operator[](i) = bytes[i - idx];
     }
+  }
+
+  int* begin(){
+    return this->bytes;
+  }
+  int* end(){
+    return this->begin() + chars_per_chunk;
   }
 
   int& operator[](int idx){
@@ -103,18 +164,37 @@ class ByteChunk128{
     return this->slice(0, stop, 1);
   }
 
-  ByteChunk128& operator=(const ByteChunk128& x){
-    for (int i = 0; i < this->length(); i++){
+  ByteChunk128 operator=(const ByteChunk128& x){
+    for (int i = 0; i < chars_per_chunk; i++){
       this->operator[](i) = x.bytes[i];
     }
     return *this;
   }
 
+  ByteChunk128 operator^(ByteChunk128 key){
+    for (int i = 0; i < chars_per_chunk; i++){
+      key[i] = key[i] ^ this->operator[](i);
+    }
+    return key;
+  }
+  ByteChunk128 operator&(ByteChunk128 key){
+    for (int i = 0; i < chars_per_chunk; i++){
+      key[i] = key[i] & this->operator[](i);
+    }
+    return key;
+  }
+  ByteChunk128 operator|(ByteChunk128 key){
+    for (int i = 0; i < chars_per_chunk; i++){
+      key[i] = key[i] | this->operator[](i);
+    }
+    return key;
+  }
+  
   ByteChunk128 operator<< (int rounds) {
     if (rounds == 0){
       return ByteChunk128(this->bytes, chars_per_chunk);
     }
-    types::chunk_rows rows = this->get_rows();
+    std::vector<Bytearray> rows = this->get_rows();
     ByteChunk128 result;
     for (auto row : rows){
       Bytearray shifted_row;
@@ -130,7 +210,7 @@ class ByteChunk128{
     if (rounds == 0){
       return ByteChunk128(this->bytes, chars_per_chunk);
     }
-    types::chunk_rows rows = this->get_rows();
+    std::vector<Bytearray> rows = this->get_rows();
     ByteChunk128 result;
     for (auto row : rows){
       Bytearray shifted_row;
@@ -149,51 +229,23 @@ class ByteChunk128{
     this->operator=(this->operator>>(rounds));
   }
 
-  ByteChunk128 shift_left_crypt() {
-    types::chunk_rows rows = this->get_rows();
+  ByteChunk128 shift_rows_left() {
     ByteChunk128 result;
     for (int row_idx = 0; row_idx < chunk_side; row_idx++){
-      Bytearray shifted_row (rows[row_idx]);
-      shifted_row <<= row_idx;
-      result.extend(shifted_row);
+      result.set_row(row_idx, this->get_row(row_idx) << row_idx);
     }
     return result;
   }
-  ByteChunk128 shift_right_crypt() {
-    types::chunk_rows rows = this->get_rows();
+  ByteChunk128 shift_rows_right() {
     ByteChunk128 result;
     for (int row_idx = 0; row_idx < chunk_side; row_idx++){
-      Bytearray shifted_row;
-      shifted_row >>= row_idx;
-      result.extend(shifted_row);
+      result.set_row(row_idx, this->get_row(row_idx) >> row_idx);
     }
     return result;
   }
 
   operator string(){
-    std::stringstream ss;
-    string str;
-    bool only_valid = true;
-
-    for (int i : this->bytes) {
-      if ((i < 32 || i > 126) && i != 0){
-        only_valid = false;
-      }
-    }
-
-    for (int i : this->bytes) {
-      if (only_valid){
-        if (i != 0){
-          str += (char) i;
-        }
-      }
-      else {
-        ss << "\\x";
-        ss << std::hex << std::setw(2) << std::setfill('0') << i;
-      }
-    }
-
-    return only_valid? str : ss.str();
+    return convert_to_string(this->bytes, chars_per_chunk);
   }
   operator Bytearray(){
     return Bytearray(this->bytes, chars_per_chunk);
@@ -205,8 +257,8 @@ class ByteChunk128{
   string hex(){
     std::stringstream ss;
     
-    for (int i : this->bytes) {
-      ss << std::hex << std::setw(2) << std::setfill('0') << i;
+    for (int i = 0; i < chars_per_chunk; i++) {
+      ss << std::hex << std::setw(2) << std::setfill('0') << this->bytes[i];
     }
 
     return ss.str();
@@ -222,8 +274,8 @@ class ByteChunk128{
   }
 
   static ByteChunk128 from_hex(string str){
-    if (str.size() > chars_per_chunk){
-      throw std::invalid_argument("Input array dimension is bigger than "+std::to_string(n_keys)+", got "+std::to_string(str.size()));
+    if (str.size() != chars_per_chunk*2){
+      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*2)+", got "+std::to_string(str.size()));
     }
     int vct[chars_per_chunk];
 
@@ -243,13 +295,13 @@ class ByteChunk128{
     };
 
     for (int i = 0; i < str.length(); i += 2){
-      vct[i] = hex_to_int({str[i], str[i+1]});
+      vct[i/2] = hex_to_int({str[i], str[i+1]});
     }
     return ByteChunk128(vct, chars_per_chunk);
   }
   static ByteChunk128 from_oct(string str){
-    if (str.size() > chars_per_chunk){
-      throw std::invalid_argument("Input array dimension is bigger than "+std::to_string(n_keys)+", got "+std::to_string(str.size()));
+    if (str.size() != chars_per_chunk*3){
+      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*3)+", got "+std::to_string(str.size()));
     }
     int vct[chars_per_chunk];
 
@@ -268,4 +320,4 @@ class ByteChunk128{
 
     return ByteChunk128(vct, chars_per_chunk);
   }
-}; 
+};

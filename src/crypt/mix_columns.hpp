@@ -1,28 +1,40 @@
 #pragma once
 
+#include <stdexcept>
 #include "../constants.hpp"
 #include "../matrix.hpp"
 #include "../chunk.hpp"
 
-#define mul_01(x) (x)
-#define mul_02(x) xtime(x)
-#define mul_03(x) (xtime(x) ^ (x))
+namespace crypt_operations
+{ 
+  Bytearray mix_columns(Bytearray column){
+    if (column.length() != chunk_side){
+      throw std::invalid_argument("Error, column length must be "+std::to_string(chunk_side)+", got "+std::to_string(column.length()));
+    }
+    Bytearray column_result;
+    for (int result_idx = 0; result_idx < chunk_side; result_idx++){
+      int sum = 0;
+      for (int mul_idx = 0; mul_idx < chunk_side; mul_idx++){
+        sum ^= mul_matrix[result_idx][mul_idx](column[mul_idx]);
+      }
+      column_result.push_back(sum);
+    }
+    return column_result;
+  }
+  
+  ByteChunk128 mix_columns(ByteChunk128 state){
+    ByteChunk128 result;
+    for (int i = 0; i < chunk_side; i++){
+      result.set_column(i, mix_columns(state.get_column(i)));
+    }
+    return result;
+  }
 
-int xtime(int x){
-  if (x & 0x80){
-    return (x ^ 0x1b) << 1;
+  ByteMatrix mix_columns(ByteMatrix matrix){
+    ByteMatrix result;
+    for (ByteChunk128 i : matrix.chunk_iterator()){
+      result.extend(mix_columns(i));
+    }
+    return result;
   }
-  return x << 1;
-}
-ByteChunk128 xtime(ByteChunk128 x){
-  for (int i = 0; i < chars_per_chunk; i++){
-    x[i] = xtime(x[i]);
-  }
-  return x;
-}
-ByteMatrix xtime(ByteMatrix x){
-  for (int i = 0; i < x.length(); i++){
-    x[i] = xtime(x[i]);
-  }
-  return x;
 }

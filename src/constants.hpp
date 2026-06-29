@@ -1,15 +1,68 @@
 #pragma once
 
+#include <sstream>
+#include <iomanip>
 #include <cmath>
+#include <vector>
+#include <string>
+#include <functional>
 
-#define words_per_key 4
-#define chars_per_word 4
-#define n_keys 11
 
-#define chars_per_chunk 16
-#define chunk_side 4
 
-const int sbox[256] = {
+std::string convert_to_string(std::vector<int> vct){
+  std::stringstream ss;
+  std::string str;
+  bool only_valid = true;
+  
+  for (int i : vct) {
+    if ((i < 32 || i > 126) && i != 0){
+      only_valid = false;
+      }
+    }
+    
+    for (int i : vct) {
+      if (only_valid && i != 0){
+        str += (char) i;
+      }
+      else {
+        ss << "\\x";
+        ss << std::setfill('0') << std::setw(2) << std::hex << i;
+      }
+    }
+    
+    return only_valid? str : ss.str();
+  }
+  std::string convert_to_string(int* arr, int size){
+    types::ilist vct;
+    vct.assign(arr, arr+size);
+    return convert_to_string(vct);
+  }
+  
+  
+  #define words_per_key 4
+  #define chars_per_word 4
+  #define n_keys 11
+  
+  #define chars_per_chunk 16
+  #define chunk_side 4
+
+  int xtime(int x){
+    bool is_one = x & 0x80;
+    x = x << 1 & 0xFF;
+    return is_one? x ^ 0x1b : x ;
+  }
+  
+  int mul_01(int x) {return x;}
+  int mul_02(int x) {return xtime(x);}
+  int mul_03(int x) {return xtime(x) ^ (x);}
+  
+  const std::function<int(int)> mul_matrix[chunk_side][chunk_side] = \
+            {{mul_02, mul_03, mul_01, mul_01},\
+            {mul_01, mul_02, mul_03, mul_01},\
+            {mul_01, mul_01, mul_02, mul_03},\
+            {mul_03, mul_01, mul_01, mul_02}};
+  
+  const int sbox[256] = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
     0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
     0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -46,5 +99,5 @@ const int inv_sbox[256] = {
     0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
 };
 const int rcon[11] = {
-    0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
+    0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
 };
