@@ -1,12 +1,7 @@
 #pragma once
 
-#include "types.hpp"
+#include "types.hpp" 
 #include "constants.hpp"
-#include <vector>
-#include <string>
-#include <cmath>
-
-using std::string, std::hex;
 
 class Bytearray{
   types::ilist bytes = {};
@@ -15,7 +10,7 @@ class Bytearray{
   Bytearray(int x=0){
     this->bytes.insert(this->bytes.end(), x, 0);
   }
-  Bytearray(string str){
+  Bytearray(std::string str){
     for (int i : str){
       this->bytes.push_back(i);
     }
@@ -26,21 +21,22 @@ class Bytearray{
   Bytearray(int str[], int length){
     this->bytes.insert(this->bytes.end(), str, str+length);
   }
+  template <size_t len>
+  Bytearray(types::iarr<len> str){
+    this->bytes.assign(str.begin(), str.end());
+  }
 
   // metodi vettori
-  void push_back(char str){
-  this->bytes.push_back((int)str);
-  }
   void push_back(int n){
     this->bytes.push_back(n);
   }
   
-  void extend(string str){
+  void extend(std::string str) {
     for (int i : str){
       this->bytes.push_back(i);
     }
   }
-  void extend(types::ilist str){
+  void extend(types::ilist str) {
     this->bytes.insert(this->bytes.end(), str.begin(), str.end());
   }
   void extend(Bytearray str){
@@ -76,10 +72,10 @@ class Bytearray{
     return this->bytes.begin();
   }
   types::ilist_iterator end(){
-    return this->bytes.end();
+    return this->begin()+this->length();
   }
   
-  Bytearray operator=(const Bytearray& x){
+  Bytearray& operator=(const Bytearray& x){
     this->bytes = x.bytes;
     return *this;
   }
@@ -115,11 +111,11 @@ class Bytearray{
     copy[0] = this->operator[](-1);
     return copy >> rounds-1;
   }
-  void operator<<=(int rounds){
-    this->bytes = (types::ilist)(this->operator<<(rounds));
+  Bytearray& operator<<=(int rounds){
+    return (this->operator= (this->operator<<(rounds)));
   }
-  void operator>>=(int rounds){
-    this->bytes = (types::ilist)(this->operator>>(rounds));
+  Bytearray& operator>>=(int rounds){
+    return (this->operator= (this->operator>>(rounds)));
   }
   
   // operatori logici
@@ -128,6 +124,10 @@ class Bytearray{
 
     if (this->length() == 0){
       return xored;
+    };
+
+    if (arr.length() == 0){
+      return *this;
     };
 
     for (int i = 0; i < this->length(); i++){
@@ -141,6 +141,10 @@ class Bytearray{
 
     if (this->length() == 0){
       return xored;
+    };
+
+    if (arr.length() == 0){
+      return *this;
     };
 
     for (int i = 0; i < this->length(); i++){
@@ -168,7 +172,7 @@ class Bytearray{
   }
   
   // conversioni di tipo
-  operator string(){
+  operator std::string(){
     return convert_to_string(this->bytes);
   }
   operator types::ilist(){
@@ -176,30 +180,18 @@ class Bytearray{
   }
 
   // conversioni di formato
-  string hex(){
-    std::stringstream ss;
-    
-    for (int i : this->bytes) {
-      ss << std::hex << std::setw(2) << std::setfill('0') << i;
-    }
-
-    return ss.str();
+  std::string hex(){
+    return basic_hex(this->bytes);
   }
-  string oct(){
-    std::stringstream ss;
-    
-    for (int i : this->bytes) {
-      ss << std::oct << std::setw(3) << std::setfill('0') << i;
-    }
-
-    return ss.str();
+  std::string oct(){
+    return basic_oct(this->bytes);
   }
 
   // costruttori alternativi
-  static Bytearray from_hex(std::string str){
+  static Bytearray from_hex (std::string str){
     return Bytearray(basic_from_hex(str));
   }
-  static Bytearray from_oct(std::string str){
+  static Bytearray from_oct (std::string str){
     return Bytearray(basic_from_oct(str));
   }
 }; 

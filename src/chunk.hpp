@@ -3,17 +3,9 @@
 #include "bytearray.hpp"
 #include "constants.hpp"
 #include "types.hpp"
-#include <stdexcept>
-#include <iostream>
-#include <memory.h>
-#include <vector>
-#include <cmath>
-
-using std::string;
 
 class ByteChunk128{
   void basic_constructor(Bytearray bytes){
-    memset(this->bytes, 0, sizeof(this->bytes)); // pulisce memoria
     if (bytes.length() > chars_per_chunk){
       throw std::invalid_argument("Input array dimension is bigger than "+std::to_string(chars_per_chunk)+", got "+std::to_string(bytes.length()));
     }
@@ -25,27 +17,33 @@ class ByteChunk128{
     }
   }
   
+  types::iarr<chars_per_chunk> bytes = {};
+
   public:
-  int bytes[chars_per_chunk];
   
   ByteChunk128(int x=0){
-    memset(this->bytes, x, sizeof(this->bytes));
+    this->bytes.fill(x);
   }
-  ByteChunk128(string bytes){
+  ByteChunk128(std::string bytes){
     this->basic_constructor(Bytearray(bytes));
   }
   ByteChunk128(Bytearray bytes){
     this->basic_constructor(bytes);
   };
+  ByteChunk128(types::iarr<chars_per_chunk> bytes){
+    types::ilist vct = {};
+    vct.assign(bytes.begin(), bytes.end());
+    this->basic_constructor(vct);
+  };
   ByteChunk128(types::ilist bytes){
-    this->basic_constructor((types::ilist)bytes);
+    this->basic_constructor(bytes);
   };
   ByteChunk128(int in_bytes[], int size){
     this->basic_constructor(Bytearray(in_bytes, size));
   }
   
-  std::vector<Bytearray> get_rows(){
-    std::vector<Bytearray> rows;
+  types::balist get_rows(){
+    types::balist rows;
     // per ogni start di riga (0, 1, 2, 3)
     for (int chunk_row_idx = 0; chunk_row_idx < chunk_side; chunk_row_idx++){
       Bytearray row = {};
@@ -61,22 +59,21 @@ class ByteChunk128{
     return this->get_rows()[idx < 0? chunk_side + idx : idx];
   }
   void set_row(int row_idx, types::ilist value){
-    int count = 0;
-    for (int i = row_idx; i < chars_per_chunk; i += chunk_side){
-      this->operator[](i) = value[count];
-      count++;
-    }
+    this->set_row(row_idx, Bytearray(value));
   }
   void set_row(int row_idx, Bytearray value){
     int count = 0;
+    if (row_idx < 0){
+      row_idx = chunk_side + row_idx;
+    }
     for (int i = row_idx; i < chars_per_chunk; i += chunk_side){
       this->operator[](i) = value[count];
       count++;
     }
   }
   
-  std::vector<Bytearray> get_columns(){
-    std::vector<Bytearray> columns;
+  types::balist get_columns(){
+    types::balist columns;
     // per ogni start di colonna (0, 4, 8, 12)
     for (int chunk_column_idx = 0; chunk_column_idx < chars_per_chunk; chunk_column_idx += chunk_side){
       Bytearray column = {};
@@ -92,14 +89,13 @@ class ByteChunk128{
     return this->get_columns()[idx < 0? chunk_side + idx : idx];
   }
   void set_column(int column_idx, types::ilist value){
-    int count = 0;
-    for (int i = column_idx*chunk_side; count < chunk_side; i++){
-      this->operator[](i) = value[count];
-      count++;
-    }
+    this->set_column(column_idx, Bytearray(value));
   }
   void set_column(int column_idx, Bytearray value){
     int count = 0;
+    if (column_idx < 0){
+      column_idx = chunk_side + column_idx;
+    }
     for (int i = column_idx*chunk_side; count < chunk_side; i++){
       this->operator[](i) = value[count];
       count++;
@@ -139,11 +135,11 @@ class ByteChunk128{
     }
   }
 
-  int* begin(){
-    return this->bytes;
+  types::iarr<chars_per_chunk>::iterator begin(){
+    return this->bytes.begin();
   }
-  int* end(){
-    return this->begin() + chars_per_chunk;
+  types::iarr<chars_per_chunk>::iterator end(){
+    return this->end();
   }
 
   int& operator[](int idx){
@@ -164,7 +160,7 @@ class ByteChunk128{
     return this->slice(0, stop, 1);
   }
 
-  ByteChunk128 operator=(const ByteChunk128& x){
+  ByteChunk128& operator=(const ByteChunk128& x){
     for (int i = 0; i < chars_per_chunk; i++){
       this->operator[](i) = x.bytes[i];
     }
@@ -192,9 +188,9 @@ class ByteChunk128{
   
   ByteChunk128 operator<< (int rounds) {
     if (rounds == 0){
-      return ByteChunk128(this->bytes, chars_per_chunk);
+      return ByteChunk128();
     }
-    std::vector<Bytearray> rows = this->get_rows();
+    types::balist rows = this->get_rows();
     ByteChunk128 result;
     for (auto row : rows){
       Bytearray shifted_row;
@@ -208,9 +204,9 @@ class ByteChunk128{
   }
   ByteChunk128 operator>> (int rounds) {
     if (rounds == 0){
-      return ByteChunk128(this->bytes, chars_per_chunk);
+      return ByteChunk128();
     }
-    std::vector<Bytearray> rows = this->get_rows();
+    types::balist rows = this->get_rows();
     ByteChunk128 result;
     for (auto row : rows){
       Bytearray shifted_row;
@@ -222,11 +218,11 @@ class ByteChunk128{
     }
     return result >> rounds-1;
   }
-  void operator<<= (int rounds){
-    this->operator=(this->operator<<(rounds));
+  ByteChunk128& operator<<= (int rounds){
+    return this->operator=(this->operator<<(rounds));
   }
-  void operator>>= (int rounds){
-    this->operator=(this->operator>>(rounds));
+  ByteChunk128& operator>>= (int rounds){
+    return this->operator=(this->operator>>(rounds));
   }
 
   ByteChunk128 shift_rows_left() {
@@ -244,39 +240,31 @@ class ByteChunk128{
     return result;
   }
 
-  operator string(){
-    return convert_to_string(this->bytes, chars_per_chunk);
+  operator std::string(){
+    return convert_to_string(this->bytes);
   }
   operator Bytearray(){
-    return Bytearray(this->bytes, chars_per_chunk);
+    return Bytearray(this->bytes);
   }
   operator types::ilist(){
-    return (types::ilist) (Bytearray(this->bytes, chars_per_chunk));
+    return (types::ilist) (Bytearray(this->bytes));
   }
 
-  string hex(){
-    std::stringstream ss;
-    
-    for (int i = 0; i < chars_per_chunk; i++) {
-      ss << std::hex << std::setw(2) << std::setfill('0') << this->bytes[i];
-    }
-
-    return ss.str();
+  std::string hex(){
+    types::ilist vct;
+    vct.assign(this->bytes.begin(), this->bytes.end());
+    return basic_hex(vct);
   }
-  string oct(){
-    std::stringstream ss;
-    
-    for (int i : this->bytes) {
-      ss << std::oct << std::setw(3) << std::setfill('0') << i;
-    }
-
-    return ss.str();
+  std::string oct(){
+    types::ilist vct;
+    vct.assign(this->bytes.begin(), this->bytes.end());
+    return basic_oct(vct);
   }
 
-  static ByteChunk128 from_hex(string str){
+  static ByteChunk128 from_hex(std::string str){
     return ByteChunk128(basic_from_hex(str));
   }
-  static ByteChunk128 from_oct(string str){
+  static ByteChunk128 from_oct(std::string str){
     return ByteChunk128(basic_from_oct(str));
   }
 };

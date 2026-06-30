@@ -37,18 +37,18 @@ Bytearray crypt_aes_128(std::string msg, Key key){
 
 ByteMatrix decrypt_aes_128(ByteMatrix msg, Key key){
   key.expand();
-  ByteMatrix crypted = msg;
-  for (int round = n_keys-1; round > 0; round--){
-    crypted = crypt_operations::add_round_key(crypted, key, round);
+  ByteMatrix decrypted = msg;
+  for (int round = n_keys-1; round >= 0; round--){
+    decrypted = crypt_operations::add_round_key(decrypted, key, round);
     if (round > 0){
       if (round < n_keys-1){
-        crypted = crypt_operations::inv_mix_columns(crypted);
+        decrypted = crypt_operations::inv_mix_columns(decrypted);
       }
-      crypted = crypt_operations::inv_shift_rows(crypted);
-      crypted = crypt_operations::inv_sub_bytes(crypted);
+      decrypted = crypt_operations::inv_shift_rows(decrypted);
+      decrypted = crypt_operations::inv_sub_bytes(decrypted);
     }
   }
-  return crypted;
+  return decrypted;
 }
 ByteChunk128 decrypt_aes_128(ByteChunk128 msg, Key key){
   return decrypt_aes_128(ByteMatrix(std::vector<ByteChunk128> {msg}), key).get_chunk(0);

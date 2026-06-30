@@ -3,18 +3,9 @@
 #include "./chunk.hpp"
 #include "./constants.hpp"
 #include "./types.hpp"
-#include <string>
-#include <stdexcept>
-#include <memory.h>
-#include <vector>
-#include <cmath>
-
-typedef std::vector<ByteChunk128> bclist;
-typedef bclist::iterator bclist_iterator;
 
 class ByteMatrix{
-  bclist chunks; // vettore di chunks
-
+  types::bclist chunks; // vettore di chunks
 
   public:
   ByteMatrix(int n=0){
@@ -23,7 +14,7 @@ class ByteMatrix{
     }
     this->chunks.insert(this->chunks.end(), n, ByteChunk128());
   }
-  ByteMatrix(bclist list){
+  ByteMatrix(types::bclist list){
     this->chunks = list;
   }
 
@@ -32,7 +23,7 @@ class ByteMatrix{
     return ByteMatrix::divide_bytearray(Bytearray(bytes));
   }
   static ByteMatrix divide_bytearray(Bytearray bytes){
-    bclist chunks;
+    types::bclist chunks;
     int i = 0;
     for (; i < bytes.length()-16; i += chars_per_chunk){
       chunks.push_back(ByteChunk128(bytes.slice(i, i+chars_per_chunk))); // riempe vettore chunks con i chunks
@@ -42,14 +33,14 @@ class ByteMatrix{
   }
 
   // metodi vettore
-  int length(){
+  int length() {
     return this->chunks.size();
   }
-  int size(){
+  int size() {
     return this->length();
   }
   
-  void push_back(int x){
+  void push_back(int x) {
     if (this->get_padding() > 0){
       this->get_chunk(-1).push_back(x);
     }
@@ -66,7 +57,7 @@ class ByteMatrix{
     }
     this->extend(ByteChunk128(x.slice(i*chars_per_chunk, x.length())));
   }
-  void extend(ByteMatrix x){
+  void extend(ByteMatrix x) {
     for (ByteChunk128 i : x.chunk_iterator()){
       this->extend(i);
     }
@@ -102,7 +93,7 @@ class ByteMatrix{
     return this->slice(0, stop, 1);
   }
 
-  int& operator[](int idx){
+  int& operator[](int idx) {
     int chunk_idx = floor(abs(idx) / chars_per_chunk);
     int num_idx = abs(idx) % chars_per_chunk;
     if (idx < 0){
@@ -122,20 +113,20 @@ class ByteMatrix{
     return this->get_chunk(-1).padding();
   }
 
-  int* begin(){
+  types::iarr_iterator<chars_per_chunk> begin(){
     return this->chunks[0].begin();
   }
-  int* end(){
+  types::iarr_iterator<chars_per_chunk> end(){
     return this->chunks[this->length()-1].end();
   }
   
   struct support_iterator {
-    bclist support_chunks;
+    types::bclist support_chunks;
 
-    bclist_iterator begin(){
+    types::bclist_iterator begin(){
       return this->support_chunks.begin();
     }
-    bclist_iterator end(){
+    types::bclist_iterator end(){
       return this->support_chunks.end();
     }
   };
@@ -143,7 +134,7 @@ class ByteMatrix{
     return support_iterator{this->chunks};
   }
 
-  ByteMatrix operator=(ByteMatrix matrix){
+  ByteMatrix& operator=(ByteMatrix matrix){
     this->chunks = matrix.chunks;
     return *this;
   }
@@ -184,6 +175,13 @@ class ByteMatrix{
     }
     return result;
   }
+  ByteMatrix& operator<<=(int rounds){
+    return this->operator=(this->operator<<(rounds));
+  }
+  ByteMatrix& operator>>=(int rounds){
+    return this->operator=(this->operator>>(rounds));
+  }
+
   ByteMatrix shift_rows_left(){
     ByteMatrix result (0);
     for (ByteChunk128 i : this->chunk_iterator()){
@@ -223,7 +221,7 @@ class ByteMatrix{
   }
 
   // conversioni di formato
-  string hex(){
+  std::string hex(){
     std::stringstream ss;
     
     for (auto i : this->chunks) {
@@ -232,7 +230,7 @@ class ByteMatrix{
 
     return ss.str();
   }
-  string oct(){
+  std::string oct(){
     std::stringstream ss;
     
     for (auto i : this->chunks) {
@@ -243,11 +241,11 @@ class ByteMatrix{
   }
 
   // costruttori alternativi
-  static ByteMatrix from_hex(string str){
+  static ByteMatrix from_hex(std::string str){
     Bytearray array = Bytearray::from_hex(str);
     return ByteMatrix::divide_bytearray(array);
   }
-  static ByteMatrix from_oct(string str){
+  static ByteMatrix from_oct(std::string str){
     Bytearray array = Bytearray::from_oct(str);
     return ByteMatrix::divide_bytearray(array);
   }

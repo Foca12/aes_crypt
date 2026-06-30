@@ -1,19 +1,22 @@
 #pragma once
 
 #include <sstream>
+#include <stdexcept>
 #include <iomanip>
-#include <cmath>
 #include <vector>
 #include <string>
 #include <functional>
-#include "types.hpp"
+#include <cmath>
+#include <array>
 
-#define words_per_key 4
-#define chars_per_word 4
-#define n_keys 11
+constexpr int words_per_key = 4;
+constexpr int chars_per_word = 4;
+constexpr int n_keys = 11;
 
-#define chars_per_chunk 16
-#define chunk_side 4
+constexpr int chars_per_chunk = 16;
+constexpr int chunk_side = 4;
+
+
 int xtime(int x){
   bool is_one = x & 0x80;
   x = x << 1 & 0xFF;
@@ -40,75 +43,6 @@ const std::function<int(int)> inv_mul_matrix[chunk_side][chunk_side] = \
            {mul_09, mul_0E, mul_0B, mul_0D},\
            {mul_0D, mul_09, mul_0E, mul_0B},\
            {mul_0B, mul_0D, mul_09, mul_0E}};
-
-
-std::string convert_to_string(std::vector<int> vct){
-  std::stringstream ss;
-  std::string str;
-  bool only_valid = true;
-  
-  for (int i : vct) {
-    if ((i < 32 || i > 126) && i != 0){
-      only_valid = false;
-      }
-    }
-    
-    for (int i : vct) {
-      if (only_valid && i != 0){
-        str += (char) i;
-      }
-      else {
-        ss << "\\x";
-        ss << std::setfill('0') << std::setw(2) << std::hex << i;
-      }
-    }
-    
-    return only_valid? str : ss.str();
-  }
-std::string convert_to_string(int* arr, int size){
-    types::ilist vct;
-    vct.assign(arr, arr+size);
-    return convert_to_string(vct);
-  }
-
-types::ilist basic_from_hex(std::string str){
-  types::ilist vct;
-  auto hex_to_int = [](std::string s) -> int{
-    int t = 0;
-    for (int n = 0; n < s.length(); n++){
-      int current;
-      if (s[n] >= 'a' && s[n] <= 'f'){
-        current = s[n] - 'a' + 10;
-      }
-      if (s[n] >= '0' && s[n] <= '9'){
-        current = s[n] - '0';
-      }
-      t += current * pow(16, s.length()-n-1);
-    }
-    return t;
-
-  };
-  for (int i = 0; i < str.length(); i += 2){
-    vct.push_back(hex_to_int({str[i], str[i+1]}));
-  }
-  return vct;
-  }
-types::ilist basic_from_oct(string str){
-  types::ilist vct;
-  auto oct_to_int = [](string s) -> int{
-    int t = 0;
-    for (int n = 0; n < s.length(); n++){
-      int current = s[n] - '0';
-      t += current * pow(8, s.length()-n-1);
-    }
-    return t;
-  };
-  for (int n = 0; n < str.length(); n += 3){
-    vct.push_back(oct_to_int({str[n], str[n+1], str[n+2]}));
-  }
-  return vct;
-}
-
 
 const int sbox[256] = {
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -149,3 +83,90 @@ const int inv_sbox[256] = {
 const int rcon[11] = {
     0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
 };
+
+std::string convert_to_string(std::vector<int> vct){
+    std::stringstream ss;
+    std::string str;
+    bool only_valid = true;
+    
+    for (int i : vct) {
+      if ((i < 32 || i > 126) && i != 0){
+        only_valid = false;
+        }
+      }
+
+      for (int i : vct) {
+        if (only_valid && i != 0){
+          str += (char) i;
+        }
+        else {
+          ss << "\\x";
+          ss << std::setfill('0') << std::setw(2) << std::hex << i;
+        }
+      }
+
+      return only_valid? str : ss.str();
+    }
+template <size_t len>
+std::string convert_to_string(std::array<int, len> arr){
+  std::vector<int> vct;
+  vct.assign(arr.begin(), arr.end());
+  return convert_to_string(vct);
+}
+
+std::vector<int> basic_from_hex(std::string str){
+    std::vector<int> vct;
+    auto hex_to_int = [](std::string s) -> int{
+      int t = 0;
+      for (int n = 0; n < s.length(); n++){
+        int current;
+        if (s[n] >= 'a' && s[n] <= 'f'){
+          current = s[n] - 'a' + 10;
+        }
+        if (s[n] >= '0' && s[n] <= '9'){
+          current = s[n] - '0';
+        }
+        t += current * pow(16, s.length()-n-1);
+      }
+      return t;
+
+    };
+    for (int i = 0; i < str.length(); i += 2){
+      vct.push_back(hex_to_int({str[i], str[i+1]}));
+    }
+    return vct;
+    }
+std::vector<int> basic_from_oct(std::string str){
+    std::vector<int> vct;
+    auto oct_to_int = [](std::string s) -> int{
+      int t = 0;
+      for (int n = 0; n < s.length(); n++){
+        int current = s[n] - '0';
+        t += current * pow(8, s.length()-n-1);
+      }
+      return t;
+    };
+    for (int n = 0; n < str.length(); n += 3){
+      vct.push_back(oct_to_int({str[n], str[n+1], str[n+2]}));
+    }
+    return vct;
+  }
+
+std::string basic_hex(std::vector<int> bytes){
+    std::stringstream ss;
+    
+    for (int i : bytes) {
+      ss << std::hex << std::setw(2) << std::setfill('0') << i;
+    }
+
+    return ss.str();
+  }
+std::string basic_oct(std::vector<int> bytes){
+    std::stringstream ss;
+    
+    for (int i : bytes) {
+      ss << std::oct << std::setw(3) << std::setfill('0') << i;
+    }
+
+    return ss.str();
+  }

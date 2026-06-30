@@ -8,8 +8,6 @@
 #include "bytearray.hpp"
 #include "types.hpp"
 #include "constants.hpp"
-#include <memory>
-#include <cmath>
 
 Bytearray g(ByteChunk128 x, int round){
   Bytearray column(4);
@@ -21,12 +19,11 @@ Bytearray g(ByteChunk128 x, int round){
 
 class Key{
   bool expanded = false;
-  ByteChunk128 keys[n_keys];
+  types::key_array keys = {};
 
   public:
-  Key(){memset(this->keys, 0, sizeof(this->keys));}
+  Key(){}
   Key(ByteChunk128 key){
-    memset(this->keys, 0, sizeof(this->keys));
     this->keys[0] = key;
   }
 
@@ -56,9 +53,9 @@ class Key{
 
   bool is_expanded() {return this->expanded;}
 
-  std::vector<ByteChunk128> get_keys(){
-    std::vector<ByteChunk128> vct;
-    vct.assign(this->keys, this->keys+(n_keys*chars_per_word*words_per_key));
+  types::bclist get_keys(){
+    types::bclist vct;
+    vct.assign(this->keys.begin(), this->keys.end());
     return vct;
   }
   ByteChunk128 get_key(int idx){
@@ -79,7 +76,7 @@ class Key{
     this->keys[0] = chunk;
     return *this;
   }
-  Key operator=(Key key){
+  Key& operator=(Key key){
     if (this->expanded){
       if (!key.expanded){
         throw std::runtime_error("Trying to assign value of a not expanded key to an already expanded key");
@@ -98,19 +95,19 @@ class Key{
   }
 
   operator std::string() {
-    return convert_to_string(this->keys[0].bytes, chars_per_chunk);
+    return convert_to_string(this->keys[0]);
   }
   operator types::ilist() {
     std::vector<int> vct;
-    vct.assign(this->keys[0].bytes, this->keys[0].bytes+chars_per_chunk);
+    vct.assign(this->keys[0].begin(), this->keys[0].end());
     return vct;
   }
   operator Bytearray() {
     std::vector<int> vct;
-    vct.assign(this->keys[0].bytes, this->keys[0].bytes+chars_per_chunk);
+    vct.assign(this->keys[0].begin(), this->keys[0].end());
     return Bytearray(vct);
   }
-  static Key from_hex(string str){
+  static Key from_hex(std::string str){
     Key key;
     if (str.length() == chars_per_chunk*2){
       key.keys[0] = ByteChunk128::from_hex(str);
@@ -120,7 +117,7 @@ class Key{
     }
     return key;
   }
-  static Key from_oct(string str){
+  static Key from_oct(std::string str){
     Key key;
     if (str.length() == chars_per_chunk*3){
       key.keys[0] = ByteChunk128::from_oct(str);
