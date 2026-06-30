@@ -1,13 +1,14 @@
 #pragma once
 
 #include <stdexcept>
+#include <functional>
 #include "../constants.hpp"
 #include "../matrix.hpp"
 #include "../chunk.hpp"
 
 namespace crypt_operations
 { 
-  Bytearray mix_columns(Bytearray column){
+  Bytearray basic_mix_columns(Bytearray column, const std::function<int(int)> matrix[chunk_side][chunk_side]){
     if (column.length() != chunk_side){
       throw std::invalid_argument("Error, column length must be "+std::to_string(chunk_side)+", got "+std::to_string(column.length()));
     }
@@ -15,13 +16,16 @@ namespace crypt_operations
     for (int result_idx = 0; result_idx < chunk_side; result_idx++){
       int sum = 0;
       for (int mul_idx = 0; mul_idx < chunk_side; mul_idx++){
-        sum ^= mul_matrix[result_idx][mul_idx](column[mul_idx]);
+        sum ^= matrix[result_idx][mul_idx](column[mul_idx]);
       }
       column_result.push_back(sum);
     }
     return column_result;
   }
-  
+
+  Bytearray mix_columns(Bytearray column){
+    return basic_mix_columns(column, mul_matrix);
+  }
   ByteChunk128 mix_columns(ByteChunk128 state){
     ByteChunk128 result;
     for (int i = 0; i < chunk_side; i++){
@@ -29,11 +33,28 @@ namespace crypt_operations
     }
     return result;
   }
-
   ByteMatrix mix_columns(ByteMatrix matrix){
     ByteMatrix result;
     for (ByteChunk128 i : matrix.chunk_iterator()){
       result.extend(mix_columns(i));
+    }
+    return result;
+  }
+  
+  Bytearray inv_mix_columns(Bytearray column){
+    return basic_mix_columns(column, inv_mul_matrix);
+  }
+  ByteChunk128 inv_mix_columns(ByteChunk128 state){
+    ByteChunk128 result;
+    for (int i = 0; i < chunk_side; i++){
+      result.set_column(i, inv_mix_columns(state.get_column(i)));
+    }
+    return result;
+  }
+  ByteMatrix inv_mix_columns(ByteMatrix matrix){
+    ByteMatrix result;
+    for (ByteChunk128 i : matrix.chunk_iterator()){
+      result.extend(inv_mix_columns(i));
     }
     return result;
   }

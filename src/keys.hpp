@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <stdexcept>
 
 #include "./crypt/sub_bytes.hpp"
 #include "chunk.hpp"
@@ -23,6 +24,7 @@ class Key{
   ByteChunk128 keys[n_keys];
 
   public:
+  Key(){memset(this->keys, 0, sizeof(this->keys));}
   Key(ByteChunk128 key){
     memset(this->keys, 0, sizeof(this->keys));
     this->keys[0] = key;
@@ -63,19 +65,36 @@ class Key{
     return this->keys[idx];
   }
 
-  std::vector<std::string> hex(){
-    std::vector<std::string> strs = {};
-    for (int i = 0; i < n_keys; i++){
-      strs.push_back(this->keys[i].hex());
-    }
-    return strs;
+  std::string hex(){
+    return this->keys[0].hex();
   }
-  std::vector<std::string> oct(){
-    std::vector<std::string> strs = {};
-    for (int i = 0; i < n_keys; i++){
-      strs.push_back(this->keys[i].oct());
+  std::string oct(){
+    return this->keys[0].oct();
+  }
+
+  Key operator=(ByteChunk128 chunk){
+    if (this->expanded){
+      throw std::runtime_error("Trying to assign value to an already expanded key");
     }
-    return strs;
+    this->keys[0] = chunk;
+    return *this;
+  }
+  Key operator=(Key key){
+    if (this->expanded){
+      if (!key.expanded){
+        throw std::runtime_error("Trying to assign value of a not expanded key to an already expanded key");
+      }
+      for (int i = 0; i < n_keys; i++){
+        this->keys[i] = key.keys[i];
+      }
+    }
+    if (!this->expanded){
+      if (key.expanded){
+        throw std::runtime_error("Trying to assign value of already expanded key to a not expanded key");
+      }
+      this->keys[0] = key.keys[0];
+    }
+    return *this;
   }
 
   operator std::string() {
@@ -92,39 +111,23 @@ class Key{
     return Bytearray(vct);
   }
   static Key from_hex(string str){
+    Key key;
     if (str.length() == chars_per_chunk*2){
-      return Key(ByteChunk128::from_hex(str));
+      key.keys[0] = ByteChunk128::from_hex(str);
     }
-    else if (str.length() == chars_per_chunk*2*n_keys){
-      Bytearray bytes (str);
-      for (int i = 0; i < str.length(); i++){
-        ByteChunk128 chunk (bytes.slice(chars_per_chunk*i, 1+i*chars_per_chunk));
-        
-      }
+    else{
+      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*2)+" or "+std::to_string(chars_per_chunk*2*n_keys)+", got "+std::to_string(str.size()));
+    }
+    return key;
+  }
+  static Key from_oct(string str){
+    Key key;
+    if (str.length() == chars_per_chunk*3){
+      key.keys[0] = ByteChunk128::from_oct(str);
     }
     else{
       throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*2)+"or "+std::to_string(chars_per_chunk*2*n_keys)+", got "+std::to_string(str.size()));
     }
-  }
-  static ByteChunk128 from_oct(string str){
-    if (str.size() != chars_per_chunk*3){
-      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*3)+", got "+std::to_string(str.size()));
-    }
-    int vct[chars_per_chunk];
-
-    auto oct_to_int = [](string s) -> int{
-      int t = 0;
-      for (int n = 0; n < s.length(); n++){
-        int current = s[n] - '0';
-        t += current * pow(8, s.length()-n-1);
-      }
-      return t;
-    };
-
-    for (int n = 0; n < str.length(); n += 3){
-      vct[n] = oct_to_int({str[n], str[n+1], str[n+2]});
-    }
-
-    return ByteChunk128(vct, chars_per_chunk);
+    return key;
   }
 };

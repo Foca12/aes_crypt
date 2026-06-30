@@ -4,22 +4,22 @@
 
 namespace crypt_operations
 {
-  Bytearray shift_left(Bytearray input){
+  Bytearray shift_rows(Bytearray input){
     return ByteMatrix::divide_bytearray(input).shift_rows_left();
   }
-  ByteChunk128 shift_left(ByteChunk128 input){
+  ByteChunk128 shift_rows(ByteChunk128 input){
     return input.shift_rows_left();
   }
-  ByteMatrix shift_left(ByteMatrix input){
+  ByteMatrix shift_rows(ByteMatrix input){
     return input.shift_rows_left();
   }
-  Bytearray shift_right(Bytearray input){
+  Bytearray inv_shift_rows(Bytearray input){
     return ByteMatrix::divide_bytearray(input).shift_rows_right();
   }
-  ByteChunk128 shift_right(ByteChunk128 input){
+  ByteChunk128 inv_shift_rows(ByteChunk128 input){
     return input.shift_rows_right();
   }
-  ByteMatrix shift_right(ByteMatrix input){
+  ByteMatrix inv_shift_rows(ByteMatrix input){
     return input.shift_rows_right();
   }
 }

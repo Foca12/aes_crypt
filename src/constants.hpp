@@ -6,8 +6,7 @@
 #include <vector>
 #include <string>
 #include <functional>
-
-
+#include "types.hpp"
 
 std::string convert_to_string(std::vector<int> vct){
   std::stringstream ss;
@@ -32,7 +31,7 @@ std::string convert_to_string(std::vector<int> vct){
     
     return only_valid? str : ss.str();
   }
-  std::string convert_to_string(int* arr, int size){
+std::string convert_to_string(int* arr, int size){
     types::ilist vct;
     vct.assign(arr, arr+size);
     return convert_to_string(vct);
@@ -54,13 +53,24 @@ std::string convert_to_string(std::vector<int> vct){
   
   int mul_01(int x) {return x;}
   int mul_02(int x) {return xtime(x);}
-  int mul_03(int x) {return xtime(x) ^ (x);}
+  int mul_03(int x) {return mul_02(x) ^ (x);}
+  int mul_04(int x) {return mul_02(mul_02(x));}
+  int mul_08(int x) {return mul_02(mul_04(x));}
+  int mul_09(int x) {return mul_08(x) ^ x;}
+  int mul_0B(int x) {return mul_08(x) ^ mul_02(x) ^ x;}
+  int mul_0D(int x) {return mul_08(x) ^ mul_04(x) ^ x;}
+  int mul_0E(int x) {return mul_08(x) ^ mul_04(x) ^ mul_02(x);}
   
   const std::function<int(int)> mul_matrix[chunk_side][chunk_side] = \
             {{mul_02, mul_03, mul_01, mul_01},\
-            {mul_01, mul_02, mul_03, mul_01},\
-            {mul_01, mul_01, mul_02, mul_03},\
-            {mul_03, mul_01, mul_01, mul_02}};
+             {mul_01, mul_02, mul_03, mul_01},\
+             {mul_01, mul_01, mul_02, mul_03},\
+             {mul_03, mul_01, mul_01, mul_02}};
+  const std::function<int(int)> inv_mul_matrix[chunk_side][chunk_side] = \
+            {{mul_0E, mul_0B, mul_0D, mul_09},\
+             {mul_09, mul_0E, mul_0B, mul_0D},\
+             {mul_0D, mul_09, mul_0E, mul_0B},\
+             {mul_0B, mul_0D, mul_09, mul_0E}};
   
   const int sbox[256] = {
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
