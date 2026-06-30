@@ -196,45 +196,10 @@ class Bytearray{
   }
 
   // costruttori alternativi
-  static Bytearray from_hex(string str){
-    types::ilist vct;
-
-    auto hex_to_int = [](string s) -> int{
-      int t = 0;
-      for (int n = 0; n < s.length(); n++){
-        int current;
-        if (s[n] >= 'a' && s[n] <= 'f'){
-          current = s[n] - 'a' + 10;
-        }
-        if (s[n] >= '0' && s[n] <= '9'){
-          current = s[n] - '0';
-        }
-        t += current * pow(16, s.length()-n-1);
-      }
-      return t;
-    };
-
-    for (int i = 0; i < str.length(); i += 2){
-      vct.push_back(hex_to_int({str[i], str[i+1]}));
-    }
-    return Bytearray(vct);
+  static Bytearray from_hex(std::string str){
+    return Bytearray(basic_from_hex(str));
   }
-  static Bytearray from_oct(string str){
-    types::ilist vct;
-
-    auto oct_to_int = [](string s) -> int{
-      int t = 0;
-      for (int n = 0; n < s.length(); n++){
-        int current = s[n] - '0';
-        t += current * pow(8, s.length()-n-1);
-      }
-      return t;
-    };
-
-    for (int n = 0; n < str.length(); n += 3){
-      vct.push_back(oct_to_int({str[n], str[n+1], str[n+2]}));
-    }
-
-    return Bytearray(vct);
+  static Bytearray from_oct(std::string str){
+    return Bytearray(basic_from_oct(str));
   }
 }; 

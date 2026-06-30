@@ -274,50 +274,9 @@ class ByteChunk128{
   }
 
   static ByteChunk128 from_hex(string str){
-    if (str.size() != chars_per_chunk*2){
-      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*2)+", got "+std::to_string(str.size()));
-    }
-    int vct[chars_per_chunk];
-
-    auto hex_to_int = [](string s) -> int{
-      int t = 0;
-      for (int n = 0; n < s.length(); n++){
-        int current;
-        if (s[n] >= 'a' && s[n] <= 'f'){
-          current = s[n] - 'a' + 10;
-        }
-        if (s[n] >= '0' && s[n] <= '9'){
-          current = s[n] - '0';
-        }
-        t += current * pow(16, s.length()-n-1);
-      }
-      return t;
-    };
-
-    for (int i = 0; i < str.length(); i += 2){
-      vct[i/2] = hex_to_int({str[i], str[i+1]});
-    }
-    return ByteChunk128(vct, chars_per_chunk);
+    return ByteChunk128(basic_from_hex(str));
   }
   static ByteChunk128 from_oct(string str){
-    if (str.size() != chars_per_chunk*3){
-      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*3)+", got "+std::to_string(str.size()));
-    }
-    int vct[chars_per_chunk];
-
-    auto oct_to_int = [](string s) -> int{
-      int t = 0;
-      for (int n = 0; n < s.length(); n++){
-        int current = s[n] - '0';
-        t += current * pow(8, s.length()-n-1);
-      }
-      return t;
-    };
-
-    for (int n = 0; n < str.length(); n += 3){
-      vct[n] = oct_to_int({str[n], str[n+1], str[n+2]});
-    }
-
-    return ByteChunk128(vct, chars_per_chunk);
+    return ByteChunk128(basic_from_oct(str));
   }
 };
