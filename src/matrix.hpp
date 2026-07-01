@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./chunk.hpp"
+#include "./chunks/chunk128.hpp"
 #include "./constants.hpp"
 #include "./types.hpp"
 
@@ -25,8 +25,8 @@ class ByteMatrix{
   static ByteMatrix divide_bytearray(Bytearray bytes){
     types::bclist chunks;
     int i = 0;
-    for (; i < bytes.length()-16; i += chars_per_chunk){
-      chunks.push_back(ByteChunk128(bytes.slice(i, i+chars_per_chunk))); // riempe vettore chunks con i chunks
+    for (; i < bytes.length()-16; i += chars_per_chunk128){
+      chunks.push_back(ByteChunk128(bytes.slice(i, i+chars_per_chunk128))); // riempe vettore chunks con i chunks
     }
     chunks.push_back(ByteChunk128(bytes.slice(i, bytes.length()))); // aggiunge chunk con padding
     return ByteMatrix(chunks);
@@ -52,10 +52,10 @@ class ByteMatrix{
   }
   void extend(Bytearray x){
     int i = 0;
-    for (; i < floor(x.length() / chars_per_chunk); i++){
-      this->extend(ByteChunk128(x.slice(i*chars_per_chunk, (i+1)*chars_per_chunk)));
+    for (; i < floor(x.length() / chars_per_chunk128); i++){
+      this->extend(ByteChunk128(x.slice(i*chars_per_chunk128, (i+1)*chars_per_chunk128)));
     }
-    this->extend(ByteChunk128(x.slice(i*chars_per_chunk, x.length())));
+    this->extend(ByteChunk128(x.slice(i*chars_per_chunk128, x.length())));
   }
   void extend(ByteMatrix x) {
     for (ByteChunk128 i : x.chunk_iterator()){
@@ -94,16 +94,16 @@ class ByteMatrix{
   }
 
   int& operator[](int idx) {
-    int chunk_idx = floor(abs(idx) / chars_per_chunk);
-    int num_idx = abs(idx) % chars_per_chunk;
+    int chunk_idx = floor(abs(idx) / chars_per_chunk128);
+    int num_idx = abs(idx) % chars_per_chunk128;
     if (idx < 0){
       chunk_idx = this->length() - chunk_idx - 1;
-      num_idx = chars_per_chunk - num_idx;
+      num_idx = chars_per_chunk128 - num_idx;
     }
     return this->chunks[chunk_idx][num_idx];
   }
   int& at(int chunk_idx, int num_idx){
-    return this->chunks[chunk_idx >= 0? chunk_idx : this->length()+chunk_idx][num_idx >= 0? num_idx : chars_per_chunk+num_idx];
+    return this->chunks[chunk_idx >= 0? chunk_idx : this->length()+chunk_idx][num_idx >= 0? num_idx : chars_per_chunk128+num_idx];
   }
   ByteChunk128& get_chunk(int idx){
     return this->chunks[idx >= 0? idx : this->length() + idx];
@@ -113,10 +113,10 @@ class ByteMatrix{
     return this->get_chunk(-1).padding();
   }
 
-  types::iarr_iterator<chars_per_chunk> begin(){
+  types::iarr_iterator<chars_per_chunk128> begin(){
     return this->chunks[0].begin();
   }
-  types::iarr_iterator<chars_per_chunk> end(){
+  types::iarr_iterator<chars_per_chunk128> end(){
     return this->chunks[this->length()-1].end();
   }
   

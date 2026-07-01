@@ -6,13 +6,13 @@
 namespace crypt_operations
 {
   ByteMatrix sub_bytes(ByteMatrix input){
-    for (int i = 0; i < chars_per_chunk * input.length(); i++){
+    for (int i = 0; i < chars_per_chunk128 * input.length(); i++){
       input[i] = sbox[input[i]];
     }
     return input;
     }
   ByteChunk128 sub_bytes(ByteChunk128 input){
-    for (int i = 0; i < chars_per_chunk; i++){
+    for (int i = 0; i < chars_per_chunk128; i++){
       input[i] = sbox[input[i]];
     }
     return input;
@@ -25,13 +25,13 @@ namespace crypt_operations
   }
 
   ByteMatrix inv_sub_bytes(ByteMatrix input){
-    for (int i = 0; i < chars_per_chunk * input.length(); i++){
+    for (int i = 0; i < chars_per_chunk128 * input.length(); i++){
       input[i] = inv_sbox[input[i]];
     }
     return input;
   }
   ByteChunk128 inv_sub_bytes(ByteChunk128 input){
-    for (int i = 0; i < chars_per_chunk; i++){
+    for (int i = 0; i < chars_per_chunk128; i++){
       input[i] = inv_sbox[input[i]];
     }
     return input;

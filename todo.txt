@@ -2,8 +2,6 @@
 FASE DI SVILUPPO DA ZERO DI AES-128 IN C++ (ARRAY LINEARE 1D)
 ================================================================================
 
-FAI IN KEYS IL FROM HEX
-
 [FASE 1] DEFINIZIONE DELLE STRUTTURE DATI E TABELLE DI LOOKUP
 --------------------------------------------------------------------------------
 X - 1.1 Definire il blocco dati primario (byte chunk) come array lineare di 16 byte

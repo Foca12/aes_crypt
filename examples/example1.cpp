@@ -1,7 +1,7 @@
 #include <iostream>
-#include "crypt.hpp"
-#include "src/keys.hpp"
-#include "src/bytearray.hpp"
+#include "../crypt.hpp"
+#include "../src/keys.hpp"
+#include "../src/bytearray.hpp"
 
 using namespace std;
 

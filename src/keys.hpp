@@ -4,14 +4,14 @@
 #include <stdexcept>
 
 #include "./crypt/sub_bytes.hpp"
-#include "chunk.hpp"
+#include "./chunks/chunk128.hpp"
 #include "bytearray.hpp"
 #include "types.hpp"
 #include "constants.hpp"
 
 Bytearray g(ByteChunk128 x, int round){
   Bytearray column(4);
-  column = x.get_column(chunk_side-1) << 1;
+  column = x.get_column(chunk128_side-1) << 1;
   column = crypt_operations::sub_bytes(column);
   column[0] = column[0] ^ rcon[round];
   return column;
@@ -109,21 +109,21 @@ class Key{
   }
   static Key from_hex(std::string str){
     Key key;
-    if (str.length() == chars_per_chunk*2){
+    if (str.length() == chars_per_chunk128*2){
       key.keys[0] = ByteChunk128::from_hex(str);
     }
     else{
-      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*2)+" or "+std::to_string(chars_per_chunk*2*n_keys)+", got "+std::to_string(str.size()));
+      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk128*2)+", got "+std::to_string(str.size()));
     }
     return key;
   }
   static Key from_oct(std::string str){
     Key key;
-    if (str.length() == chars_per_chunk*3){
+    if (str.length() == chars_per_chunk128*3){
       key.keys[0] = ByteChunk128::from_oct(str);
     }
     else{
-      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk*2)+"or "+std::to_string(chars_per_chunk*2*n_keys)+", got "+std::to_string(str.size()));
+      throw std::invalid_argument("Input array must be "+std::to_string(chars_per_chunk128*3)+", got "+std::to_string(str.size()));
     }
     return key;
   }

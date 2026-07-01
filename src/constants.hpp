@@ -13,8 +13,11 @@ constexpr int words_per_key = 4;
 constexpr int chars_per_word = 4;
 constexpr int n_keys = 11;
 
-constexpr int chars_per_chunk = 16;
-constexpr int chunk_side = 4;
+constexpr int chars_per_chunk128 = 16;
+constexpr int chunk128_side = 4;
+constexpr int chars_per_chunk256 = 32;
+constexpr int chunk256_columns = 8;
+constexpr int chunk256_rows = 4;
 
 
 int xtime(int x){
@@ -33,12 +36,12 @@ int mul_0B(int x) {return mul_08(x) ^ mul_02(x) ^ x;}
 int mul_0D(int x) {return mul_08(x) ^ mul_04(x) ^ x;}
 int mul_0E(int x) {return mul_08(x) ^ mul_04(x) ^ mul_02(x);}
 
-const std::function<int(int)> mul_matrix[chunk_side][chunk_side] = \
+const std::function<int(int)> mul_matrix[chunk128_side][chunk128_side] = \
           {{mul_02, mul_03, mul_01, mul_01},\
            {mul_01, mul_02, mul_03, mul_01},\
            {mul_01, mul_01, mul_02, mul_03},\
            {mul_03, mul_01, mul_01, mul_02}};
-const std::function<int(int)> inv_mul_matrix[chunk_side][chunk_side] = \
+const std::function<int(int)> inv_mul_matrix[chunk128_side][chunk128_side] = \
           {{mul_0E, mul_0B, mul_0D, mul_09},\
            {mul_09, mul_0E, mul_0B, mul_0D},\
            {mul_0D, mul_09, mul_0E, mul_0B},\
@@ -123,8 +126,11 @@ std::vector<int> basic_from_hex(std::string str){
         if (s[n] >= 'a' && s[n] <= 'f'){
           current = s[n] - 'a' + 10;
         }
-        if (s[n] >= '0' && s[n] <= '9'){
+        else if (s[n] >= '0' && s[n] <= '9'){
           current = s[n] - '0';
+        }
+        else {
+          throw std::invalid_argument("Got invalid hex character: "+s[n]);
         }
         t += current * pow(16, s.length()-n-1);
       }
@@ -141,7 +147,13 @@ std::vector<int> basic_from_oct(std::string str){
     auto oct_to_int = [](std::string s) -> int{
       int t = 0;
       for (int n = 0; n < s.length(); n++){
-        int current = s[n] - '0';
+        int current = 0;
+        if (s[n] >= '0' && s[n] <= '7'){
+          current = s[n] - '0';
+        }
+        else {
+          throw std::invalid_argument("Got invalid oct character: "+s[n]);
+        }
         t += current * pow(8, s.length()-n-1);
       }
       return t;
